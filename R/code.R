@@ -788,3 +788,59 @@ leaf_colored_markers <- function(palette){
 
 
 
+
+
+
+
+
+
+
+#' Sauvegarde une figure en png et/ou svg
+#'
+#' @param graph figure
+#' @param fichier emplacement ou enregistrer la figure
+#'    .png ou .svg à la fin pour limiter l'enregistrement à un seul format
+#' @param width largeur en inches
+#' @param height hauteur en inches
+#' @param .res résolution pour le png, en ppi
+#' @param .silence Désactive le témoin d'activation "."
+#'
+#' @export
+#'
+sauv_graph <- function(graph, fichier, width, height, .res = 200, .silence = FALSE){
+
+  go_png <- !stringr::str_detect(fichier, 'svg$')
+  go_svg <- !stringr::str_detect(fichier, 'png$')
+
+  if(go_png){
+    fichier |>
+      paste0('.png') |>
+      stringr::str_remove('(?<=\\.png)\\.png') |>
+      png(width, height, units='in', res = .res)
+
+    suppressMessages(print(graph))
+
+    dev.off()
+  }
+
+  if(go_svg){
+    fichier |>
+      paste0('.svg') |>
+      stringr::str_remove('(?<=\\.svg)\\.svg') |>
+      svg(width, height)
+
+    suppressMessages(print(graph))
+
+    dev.off()
+  }
+
+  if(!.silence) cat('.')
+}
+
+
+
+
+
+
+
+

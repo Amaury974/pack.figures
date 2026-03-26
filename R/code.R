@@ -8,8 +8,8 @@
 #' @param sim Colonne des simulés.
 #' @param .variable  Nom de la variable étudié, pour nommer les axes. facultatif.
 #' @param .poids Poids de chaque mesure. facultatif.
-#' @param .effet_dev Y a t'il un effet developpement de la variable étudiée ?
-#'   Utilisé pour le choix des indicateurs à afficher:
+#' @param .effet_dev Y a t'il un effet développement de la variable étudiée ?
+#'   Utilisé pour le choix des indicateurs à afficher :
 #'   * `FALSE` - RMSE, RRMSE, biais, N
 #'   * `TRUE` - MAPE, N
 #' @param .couleur couleur des points
@@ -235,8 +235,8 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
       position <- position +1
       graphs_col[[position]] <- cowplot::ggdraw() +
         cowplot::draw_label(noms_col_i,
-                   fontface = 'bold',
-                   size = base_height * 105/stringr::str_count(noms_col_i))
+                            fontface = 'bold',
+                            size = base_height * 105/stringr::str_count(noms_col_i))
 
     }
     list_graph <- append(graphs_col, list_graph)
@@ -257,9 +257,9 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
       # print(position)
       graph_ligne <- cowplot::ggdraw() +
         cowplot::draw_label(noms_ligne_i,
-                   fontface = 'bold',
-                   angle = 90,
-                   size = base_height * 105/stringr::str_count(noms_ligne_i))
+                            fontface = 'bold',
+                            angle = 90,
+                            size = base_height * 105/stringr::str_count(noms_ligne_i))
 
       list_graph <- append(list_graph,
                            list(graph_ligne),
@@ -296,13 +296,13 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
   # ~~~~{    Corps du graphique    }~~~~
   # assemblage des titres de lignes avec tous les graphs pour former le corps
   grid_graph_1 <- cowplot::plot_grid(plotlist = list_graph,
-                            ncol = ncol_vrai, .rel_widths = .rel_widths, .rel_heights = rel_heights_,
-                            labels = names(list_graph),
-                            label_size = 5*base_height,
-                            label_x = label_X,
-                            label_y = 1,
-                            hjust = label_hjust,
-                            vjust = 'bottom')
+                                     ncol = ncol_vrai, .rel_widths = .rel_widths, .rel_heights = rel_heights_,
+                                     labels = names(list_graph),
+                                     label_size = 5*base_height,
+                                     label_x = label_X,
+                                     label_y = 1,
+                                     hjust = label_hjust,
+                                     vjust = 'bottom')
 
   # ~~~~{    Mise en forme du titre    }~~~~
   largeur_max <- (base_width * ncol - as.numeric(!is.null(.legende)) * .L_dim[1]) * 105
@@ -364,10 +364,10 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
 
   # ~~~~{    Enregistrement    }~~~~
   cowplot::save_plot(fichier, grid_graph_2,
-            ncol = 1, nrow = 1,
-            base_height=(hauteur_titre + nrow)*base_height, #pour que la hauteur standard corresponde bien à un graph
-            base_width = ncol*base_width,
-            limitsize  = FALSE)
+                     ncol = 1, nrow = 1,
+                     base_height=(hauteur_titre + nrow)*base_height, #pour que la hauteur standard corresponde bien à un graph
+                     base_width = ncol*base_width,
+                     limitsize  = FALSE)
 }
 
 
@@ -378,17 +378,18 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
 #' Boxplot selon un facteur x avec test de Tukey, classés selon la médiane des groupes.
 #'
 #' @param data data.frame des données à représenter.
-#' @param x Colonne de l'axe x: Categories.
+#' @param x Colonne de l'axe x: Catégories.
 #' @param y Colonne de l'axe y: Valeurs.
-#' @param n_min Les catégoories pour léquels N < n_min ne sont pas représentées.
+#' @param n_min Les catégories pour lesquelles N < n_min ne sont pas représentées.
 #' @param .keep_order Garde l'ordre des catégories (facteur).
 #'   Sinon elles sont réorganisées par ordre décroissant de leur médiane
+#' @param .log Échelle logarithmique
 #'
 #' @returns Graphique ggplot2.
 #' @import ggplot2 dplyr stringr
 #' @importFrom stats median aov as.formula reorder
 #' @export
-boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE){
+boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
 
   if (!requireNamespace("agricolae", quietly = TRUE)) {
     stop(
@@ -435,25 +436,63 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE){
 
   # ~~~~{    Hauteur totale pour ajustement    }~~~~
   y_span <-  max(data_graph$y, na.rm = TRUE) - min(data_graph$y, na.rm = TRUE)
+  Y_MIN <- min(data_graph$y, na.rm = TRUE) - y_span/40
+  Y_MAX <- max(data_graph$y, na.rm = TRUE) + y_span/30
+
+  # # ~~~~{    Texte d'annotation    }~~~~
+  # text_med <- textGrob("Médiane", gp=gpar(color='#85e085', fontface="bold"))
 
   # ~~~~{    Figure    }~~~~
-  ggplot(data_graph, aes(x, y)) +
+  figure <- ggplot(data_graph, aes(x, y)) +
     geom_boxplot(na.rm = TRUE, fill = '#ffff99') +
+
+    # annotation N en bas
     geom_label(data = infos, aes(x, label = N),
                y = -Inf, vjust = 'bottom',
                label.size = 0, label.padding = unit(0.2,'lines'),
                fill = 'transparent',
                color = 'black') +
+    annotate(geom = 'label',
+             x = -Inf,
+             y = ifelse(.log, 0,-Inf),
+             hjust = 1,
+             vjust = 'bottom',
+             linewidth = 0,
+             label.padding = unit(0.2,'lines'),
+             fill = 'transparent',
+             label = 'N',
+             color = 'black') +
+
+    # annotation médiane en haut
     geom_label(data = infos, aes(x, label = paste(round(med, nbr_chiffres), groups)),
                y = Inf, vjust = 'top',
-               label.size = 0,
+               linewidth = 0,
                label.padding = unit(0.2,'lines'),
                fill = '#85e085',
                color = 'black') +
-    coord_cartesian(ylim = c(min(data_graph$y, na.rm = TRUE)-y_span/40,
-                             max(data_graph$y, na.rm = TRUE)+y_span/30)) +
-    theme(axis.text.x = element_text(angle=30, hjust = 1))+
+    annotate(geom = 'label',
+             x = -Inf,
+             y = Inf,
+             hjust = 1,
+             vjust = 'top',
+             linewidth = 0,
+             label.padding = unit(0.2,'lines'),
+             fill = 'transparent',
+             label = 'Médiane',
+             color = '#85e085',
+             fontface="bold") +
+
+    coord_cartesian(ylim = c(Y_MIN, Y_MAX),
+                    xlim = range(as.numeric(data_graph$x)),
+                    clip = 'off') +
+    theme(axis.text.x = element_text(angle=30, hjust = 1),
+          plot.margin = unit(c(0.5,0.5,0.5,2.5), "lines"))+
     xlab(x)+ ylab(y)
+
+  if(.log)
+    figure <- figure +  scale_y_log10()
+
+  figure
 }
 
 
@@ -510,18 +549,18 @@ rf_fig <- function(random_forest, titre = names(random_forest), fichier, .expl_v
 
   if(.expl_var){
     liste_graph_rf[['A']] <- cowplot::ggdraw() + cowplot::draw_label("\nAmélioration des performances lorsque la variable est utilisée\n",
-                                                   size = 10, hjust = 0, vjust = 0, x = 0.1, y = 0.2)
+                                                                     size = 10, hjust = 0, vjust = 0, x = 0.1, y = 0.2)
     liste_graph_rf[['B']] <- cowplot::ggdraw() + cowplot::draw_label("Discrimination permise par la variable.\nBiais possible en faveur des variables\npermettant un grand nombre de classes.",
-                                                   size = 10, hjust = 0, vjust = 0, x = 0.1, y = 0.2)
+                                                                     size = 10, hjust = 0, vjust = 0, x = 0.1, y = 0.2)
     names(liste_graph_rf)[3:4] <- ''
   }
 
 
   cowplot::fig_grid(list_graph = liste_graph_rf,
-           titre      = titre,
-           fichier    = fichier,
-           ncol       = 2, rel_heights = c(1, if(.expl_var) 0.1 else NULL),
-           base_dim   = c(4.5, ifelse(.expl_var, 2.5, 4)), rel_widths = c(0.66,0.34))
+                    titre      = titre,
+                    fichier    = fichier,
+                    ncol       = 2, rel_heights = c(1, if(.expl_var) 0.1 else NULL),
+                    base_dim   = c(4.5, ifelse(.expl_var, 2.5, 4)), rel_widths = c(0.66,0.34))
 }
 
 
@@ -713,36 +752,36 @@ leaf_colored_markers <- function(palette){
     )
   }
 
-path_ombre <- system.file(                                                      # chemin d'accès vers l'ombre du marqueur par défaut de Leaflet,
-  "htmlwidgets/lib/leaflet/images/marker-shadow.png",                           #  dont la forme est suffisamment proche de celle du svg qu'on utilise
-  package = "leaflet"                                                           #  (on ne peut pas utiliser le dit marqueur par défaut parce qu'il est en .png et donc que la colorisation serait beaucoup plus complexe qu'avec un .svg)
-)
+  path_ombre <- system.file(                                                      # chemin d'accès vers l'ombre du marqueur par défaut de Leaflet,
+    "htmlwidgets/lib/leaflet/images/marker-shadow.png",                           #  dont la forme est suffisamment proche de celle du svg qu'on utilise
+    package = "leaflet"                                                           #  (on ne peut pas utiliser le dit marqueur par défaut parce qu'il est en .png et donc que la colorisation serait beaucoup plus complexe qu'avec un .svg)
+  )
 
-temp_dir <- tempdir()                                                           # Un emplacement temporaire pour stocker les icônes le temps de les utiliser.
+  temp_dir <- tempdir()                                                           # Un emplacement temporaire pour stocker les icônes le temps de les utiliser.
 
-list_icons <- list()
-for (i in names(palette)) {
+  list_icons <- list()
+  for (i in names(palette)) {
 
-  path <- paste0(temp_dir, "/icon_", i, ".svg")                                 # La direction où on va enregistrer temporairement les icônes colorées.
+    path <- paste0(temp_dir, "/icon_", i, ".svg")                                 # La direction où on va enregistrer temporairement les icônes colorées.
 
-  svg_color <- gsub("#000000", palette[i], svg_black)                           # Dans le fichier .svg on remplace la couleur noir par la couleur qu'on veut, en format hexadécimal également.
-  writeLines(svg_color, path)                                                   # On enregistre le svg dans le dossier temporaire
+    svg_color <- gsub("#000000", palette[i], svg_black)                           # Dans le fichier .svg on remplace la couleur noir par la couleur qu'on veut, en format hexadécimal également.
+    writeLines(svg_color, path)                                                   # On enregistre le svg dans le dossier temporaire
 
-  list_icons[[i]] <-                                                            # Les icônes sont dans une liste nommée dont le nom correspond à l'identifiant de l'exploitation
-    leaflet::makeIcon(iconUrl = path,                                           # On lit le fichier qu'on vient d'écrire (ça a l'air très con mais la fonction permet uniquement d'aller chercher une image en dehors de l'appli)
-             iconWidth = 24,                                                    # On définit la taille et la position de l'image par rapport au point
-             iconHeight = 24,
-             iconAnchorX = 12,
-             iconAnchorY = 24,
+    list_icons[[i]] <-                                                            # Les icônes sont dans une liste nommée dont le nom correspond à l'identifiant de l'exploitation
+      leaflet::makeIcon(iconUrl = path,                                           # On lit le fichier qu'on vient d'écrire (ça a l'air très con mais la fonction permet uniquement d'aller chercher une image en dehors de l'appli)
+                        iconWidth = 24,                                                    # On définit la taille et la position de l'image par rapport au point
+                        iconHeight = 24,
+                        iconAnchorX = 12,
+                        iconAnchorY = 24,
 
-             shadowUrl = path_ombre,                                            # idem pour ajouter l'ombre
-             shadowWidth = 41,
-             shadowHeight = 41,
-             shadowAnchorX = 12,
-             shadowAnchorY = 41
-    )
-}
-list_icons <- structure(list_icons, class = "leaflet_icon_set")                 # pour que la liste soit reconnue comme une liste d'icônes
+                        shadowUrl = path_ombre,                                            # idem pour ajouter l'ombre
+                        shadowWidth = 41,
+                        shadowHeight = 41,
+                        shadowAnchorX = 12,
+                        shadowAnchorY = 41
+      )
+  }
+  list_icons <- structure(list_icons, class = "leaflet_icon_set")                 # pour que la liste soit reconnue comme une liste d'icônes
 
 }
 

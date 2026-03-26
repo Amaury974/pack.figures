@@ -4,19 +4,21 @@
 \alias{boxplot2}
 \title{Boxplot Pré-configuré}
 \usage{
-boxplot2(data, x, y, n_min = 5, .keep_order = FALSE)
+boxplot2(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE)
 }
 \arguments{
 \item{data}{data.frame des données à représenter.}
 
-\item{x}{Colonne de l'axe x: Categories.}
+\item{x}{Colonne de l'axe x: Catégories.}
 
 \item{y}{Colonne de l'axe y: Valeurs.}
 
-\item{n_min}{Les catégoories pour léquels N < n_min ne sont pas représentées.}
+\item{n_min}{Les catégories pour lesquelles N < n_min ne sont pas représentées.}
 
 \item{.keep_order}{Garde l'ordre des catégories (facteur).
 Sinon elles sont réorganisées par ordre décroissant de leur médiane}
+
+\item{.log}{Échelle logarithmique}
 }
 \value{
 Graphique ggplot2.

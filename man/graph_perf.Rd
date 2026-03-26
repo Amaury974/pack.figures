@@ -26,8 +26,8 @@ graph_perf(
 
 \item{.poids}{Poids de chaque mesure. facultatif.}
 
-\item{.effet_dev}{Y a t'il un effet developpement de la variable étudiée ?
-Utilisé pour le choix des indicateurs à afficher:
+\item{.effet_dev}{Y a t'il un effet développement de la variable étudiée ?
+Utilisé pour le choix des indicateurs à afficher :
 \itemize{
 \item \code{FALSE} - RMSE, RRMSE, biais, N
 \item \code{TRUE} - MAPE, N

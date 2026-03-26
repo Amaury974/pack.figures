@@ -436,11 +436,16 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
 
   # ~~~~{    Hauteur totale pour ajustement    }~~~~
   y_span <-  max(data_graph$y, na.rm = TRUE) - min(data_graph$y, na.rm = TRUE)
-  Y_MIN <- min(data_graph$y, na.rm = TRUE) - y_span/40
-  Y_MAX <- max(data_graph$y, na.rm = TRUE) + y_span/30
+  Y_MIN <- min(data_graph$y, na.rm = TRUE)
+  Y_MAX <- max(data_graph$y, na.rm = TRUE)
 
-  # # ~~~~{    Texte d'annotation    }~~~~
-  # text_med <- textGrob("Médiane", gp=gpar(color='#85e085', fontface="bold"))
+  if(.log){
+    Y_MIN <- Y_MIN / 10^(y_span*0.005)
+    Y_MAX <- Y_MAX * 10^(y_span*0.005)
+  } else {
+    Y_MIN <- Y_MIN - y_span/40
+    Y_MAX <- Y_MAX + y_span/30
+  }
 
   # ~~~~{    Figure    }~~~~
   figure <- ggplot(data_graph, aes(x, y)) +
@@ -448,7 +453,7 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
     # annotation N en bas
     geom_label(data = infos, aes(x, label = N),
                y = -Inf, vjust = 'bottom',
-               label.size = 0, label.padding = unit(0.2,'lines'),
+               linewidth = 0, label.padding = unit(0.2,'lines'),
                fill = 'transparent',
                color = 'black') +
     annotate(geom = 'label',

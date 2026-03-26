@@ -456,7 +456,8 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
                linewidth = 0, label.padding = unit(0.2,'lines'),
                fill = 'transparent',
                color = 'black') +
-    annotate(geom = 'label',
+    annotate(label = 'N',
+             geom = 'label',
              x = -Inf,
              y = ifelse(.log, 0,-Inf),
              hjust = 1,
@@ -464,8 +465,8 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
              linewidth = 0,
              label.padding = unit(0.2,'lines'),
              fill = 'transparent',
-             label = 'N',
-             color = 'black') +
+             color = 'black',
+             fontface = "bold") +
 
     # annotation médiane en haut
     geom_label(data = infos, aes(x, label = paste(round(med, nbr_chiffres), groups)),
@@ -474,7 +475,8 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
                label.padding = unit(0.2,'lines'),
                fill = '#85e085',
                color = 'black') +
-    annotate(geom = 'label',
+    annotate(label = 'Médiane',
+             geom = 'label',
              x = -Inf,
              y = Inf,
              hjust = 1,
@@ -482,9 +484,8 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
              linewidth = 0,
              label.padding = unit(0.2,'lines'),
              fill = 'transparent',
-             label = 'Médiane',
              color = '#85e085',
-             fontface="bold") +
+             fontface = "bold") +
 
     # BOXPLOT (at last)
     geom_boxplot(na.rm = TRUE, fill = '#ffff99') +

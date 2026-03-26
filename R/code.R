@@ -444,7 +444,6 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
 
   # ~~~~{    Figure    }~~~~
   figure <- ggplot(data_graph, aes(x, y)) +
-    geom_boxplot(na.rm = TRUE, fill = '#ffff99') +
 
     # annotation N en bas
     geom_label(data = infos, aes(x, label = N),
@@ -482,13 +481,18 @@ boxplot2 <- function(data, x, y, n_min = 5, .keep_order = FALSE, .log = FALSE){
              color = '#85e085',
              fontface="bold") +
 
+    # BOXPLOT (at last)
+    geom_boxplot(na.rm = TRUE, fill = '#ffff99') +
+
+    # mise en forme, marges, espacements, etc.
     coord_cartesian(ylim = c(Y_MIN, Y_MAX),
                     xlim = range(as.numeric(data_graph$x)),
                     clip = 'off') +
     theme(axis.text.x = element_text(angle=30, hjust = 1),
-          plot.margin = unit(c(0.5,0.5,0.5,2.5), "lines"))+
+          plot.margin = unit(c(0.5,0.5,0.5,1), "lines"))+
     xlab(x)+ ylab(y)
 
+  # échelle logarithmique
   if(.log)
     figure <- figure +  scale_y_log10()
 

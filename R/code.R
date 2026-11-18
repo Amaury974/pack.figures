@@ -988,7 +988,7 @@ save_plot_bg <- function(plot, filename, image_path, width, height,
 #' @param marge_X largeur fixe du graphique, non impactée par la modification du ratio
 #' @param marge_Y hauteur  fixe du graphique, non impactée par la modification du ratio
 #'
-#' @returns vecteur de longueur 2 : X (largeur) et Y (hauteur)
+#' @returns liste de longueur 2 : X (largeur) et Y (hauteur)
 #' @export
 dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
   # résolution de l'équation (x + marge_x) * (x/ratio + marge_y) = aire
@@ -1008,6 +1008,36 @@ dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
   list(X = X, Y = X/ratio + marge_Y)
 }
 
+#' Marge fixe d'un ggplot
+#'
+#' @param plot le graphique ggplot2 à analyser
+#'
+#' @returns  liste de longueur 2 : marge_X, marge_Y
+#' @export
+#'
+#' @examples
+#' p <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+#'       geom_point() +
+#'       labs(caption = "Source : mtcars")
+#'
+#' quelles_marges(p)
+#'
+quelles_marges  <- function(plot) {
+  pdf(NULL, width = 10, height = 10)
+  g <- ggplotGrob(plot)
+  dev.off()
+
+  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
+  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
+  # qu'on peut convertir en pouces directement.
+  is_null_w <- grid::unitType(g$widths)  == "null"
+  is_null_h <- grid::unitType(g$heights) == "null"
+
+  fixed_w_in <- sum(grid::convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
+  fixed_h_in <- sum(grid::convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
+
+  list(marge_X = fixed_w_in, marge_Y = fixed_h_in)
+}
 
 
 

@@ -16,7 +16,7 @@ dim_aire(ratio, aire = 30, marge_X = 0, marge_Y = 1)
 \item{marge_Y}{hauteur  fixe du graphique, non impactée par la modification du ratio}
 }
 \value{
-vecteur de longueur 2 : X (largeur) et Y (hauteur)
+liste de longueur 2 : X (largeur) et Y (hauteur)
 }
 \description{
 Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée

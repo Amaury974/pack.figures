@@ -752,7 +752,6 @@ mega_Palette <- function(N){
 #' leaflet::addMarkers(lat = c(0,0,1,1),
 #'                     lng = c(0,1,0,1),
 #'                     icon = my_markers[names(list_col)])
-
 leaf_colored_markers <- function(palette){
 
   if (!requireNamespace("leaflet", quietly = TRUE)) {
@@ -850,6 +849,164 @@ sauv_graph <- function(graph, fichier, width, height, .res = 200, .silence = FAL
 
 
 
+
+
+
+#' Ajoute une image d'arriere-plan non deformee a un ggplot, sous le quadrillage
+#'
+#' @param plot       objet ggplot
+#' @param image_path chemin vers l'image (png, jpg, etc.)
+#' @param width,height dimensions EXACTES d'export prevues, en pouces
+#'                      (doivent correspondre a celles utilisees dans png())
+#' @param height_frac fraction de la hauteur du panel que l'image doit occuper
+#'                    (0.5 = 50%). La largeur est deduite automatiquement du
+#'                    ratio natif de l'image : jamais de deformation.
+#' @param x, y       position du centre de l'image en npc du panel (0.5,0.5 = centre)
+#' @param bg_fill    couleur du fond place derriere l'image (defaut "white")
+#'
+#' @return le ggplot avec l'image comme panel.background (donc sous panel.grid)
+#'
+#' @importFrom ggplot2 ggplotGrob
+#' @import grid
+#'
+#' @export
+add_background_image <- function(plot, image_path, width, height,
+                                 height_frac = 0.5,
+                                 x = 0.5, y = 0.5,
+                                 bg_fill = "white") {
+
+  img  <- magick::image_read(image_path)
+  info <- magick::image_info(img)
+  img_ratio <- info$height / info$width   # ratio natif hauteur/largeur
+
+  # --- 1. Mesurer le panel reel pour CE plot, a SA taille d'export -----------
+  # On dessine le plot dans un device png temporaire de la bonne taille pour
+  # que les marges/legende/caption soient calculees avec les memes metriques
+  # que lors de l'export final.
+  tmp <- tempfile(fileext = ".png")
+  png(tmp, width = width, height = height, units = "in", res = 96)
+  g <- ggplotGrob(plot)
+  dev.off()
+  unlink(tmp)
+
+  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
+  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
+  # qu'on peut convertir en pouces directement.
+  is_null_w <- unitType(g$widths)  == "null"
+  is_null_h <- unitType(g$heights) == "null"
+
+  fixed_w_in <- sum(convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
+  fixed_h_in <- sum(convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
+
+  panel_w_in <- width  - fixed_w_in
+  panel_h_in <- height - fixed_h_in
+
+  if (panel_w_in <= 0 || panel_h_in <= 0) {
+    stop("Panel de taille nulle ou negative : augmentez width/height ",
+         "(la legende/caption prennent plus de place que le graphique).")
+  }
+
+  # --- 2. Dimensionner l'image sans la deformer -------------------------------
+  h_npc <- height_frac
+  h_in  <- panel_h_in * h_npc
+  w_in  <- h_in / img_ratio
+  w_npc <- w_in / panel_w_in
+
+  if (w_npc > 1) {
+    warning("A height_frac = ", height_frac, ", l'image deborderait du panel ",
+            "en largeur (w_npc = ", round(w_npc, 2), "). Reduction automatique ",
+            "pour qu'elle tienne en largeur.")
+    w_npc <- 1
+    h_npc <- w_npc * img_ratio * (panel_w_in / panel_h_in)
+  }
+
+  # --- 3. Construire le grob et l'ajouter en fond -----------------------------
+  # rectGrob blanc en dessous (remplit tout le panel) + image par-dessus,
+  # le tout regroupe dans un seul grob utilise comme panel.background.
+  bg_rect <- rectGrob(gp = gpar(fill = bg_fill, col = NA))
+
+  bg_raster <- rasterGrob(
+    img,
+    x = unit(x, "npc"), y = unit(y, "npc"),
+    width  = unit(w_npc, "npc"),
+    height = unit(h_npc, "npc")
+  )
+
+  bg_grob <- grobTree(bg_rect, bg_raster)
+
+  # Place le grob au niveau du panel.background -> dessine AVANT panel.grid,
+  # donc l'image (et son fond blanc) apparaissent SOUS le quadrillage.
+  plot + theme(panel.background = element_custom_bg(bg_grob))
+}
+
+#' Sauvegarde un ggplot avec image de fond (png uniquement)
+#'
+#' @param plot        objet ggplot (sans l'image de fond -- elle est ajoutee ici)
+#' @param filename    chemin de sortie, ex. "plot1.png"
+#' @param image_path  chemin de l'image de fond
+#' @param width,height dimensions d'export en pouces
+#' @param height_frac fraction de la hauteur du panel occupee par l'image
+#' @param res         resolution (dpi)
+#'
+#' @export
+#'
+#' @examples
+#'
+#' p1 <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
+#' p2 <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+#'       geom_point() +
+#'       labs(caption = "Source : mtcars")
+#' url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
+#'
+#' save_plot_bg(p1, "plot1.png", url_img, width = 6,  height = 4)
+#' save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7)
+#'
+#' # Chaque appel recalcule la taille reelle du panel pour CE plot (avec ou sans
+#' # legende/caption) et redimensionne l'image en consequence : jamais de
+#' # deformation, image sous le quadrillage, et toujours ~50% de la hauteur du
+#' # panel (parametrable via height_frac).
+#'
+save_plot_bg <- function(plot, filename, image_path, width, height,
+                         height_frac = 0.5, res = 300, ...) {
+  p2 <- add_background_image(plot, image_path, width, height,
+                             height_frac = height_frac, ...)
+
+  png(filename, width = width, height = height, units = "in", res = res)
+  print(p2)
+  dev.off()
+
+  invisible(p2)
+}
+
+
+#' dim d'export depuis ratio
+#'
+#' Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée
+#'
+#' @param ratio ratio X/Y souhaité pour la zone de graphique
+#' @param aire Aire souhaitée pour l'export
+#' @param marge_X largeur fixe du graphique, non impactée par la modification du ratio
+#' @param marge_Y hauteur  fixe du graphique, non impactée par la modification du ratio
+#'
+#' @returns vecteur de longueur 2 : X (largeur) et Y (hauteur)
+#' @export
+dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
+  # résolution de l'équation (x + marge_x) * (x/ratio + marge_y) = aire
+  # <=> (x² + x * marge_x)/ratio + x * marge_y + marge_x * marge_y - aire = 0
+  # -> polygone du second degré ... ^^'
+
+  a <- 1/ratio
+  b <- marge_X + marge_Y + marge_X/ratio
+  c <- marge_X * marge_Y - aire
+
+  # résolution de l'équation 1/ratio *X² + marge_Y*X -aire
+  X1 <- (-b - sqrt(b^2 - 4 * a * c))/(2 * a)
+  X2 <- (-b + sqrt(b^2 - 4 * a * c))/(2 * a)
+
+  X <- max(X1, X2) # on ne garde que la solution positive
+
+  list(X = X, Y = X/ratio + marge_Y)
+}
 
 
 

@@ -50,7 +50,7 @@ graph_perf <- function(data, obs, sim, .variable = NA, .poids = NULL, .effet_dev
                x = axes_min,
                y = axes_max,
                label= with(data,
-                           paste0("MAPE = ",signif(ajorant.divers::indic(v_obs, v_sim, 'MAPE', .poids = poids),3), " %",
+                           paste0("MAPE = ",signif(pack.divers::indic(v_obs, v_sim, 'MAPE', .poids = poids),3), " %",
                                   "\nN = ",sum(!is.na(v_obs) & poids != 0))),
                hjust = "left",
                vjust = "top",
@@ -63,10 +63,10 @@ graph_perf <- function(data, obs, sim, .variable = NA, .poids = NULL, .effet_dev
                x = axes_min,
                y = axes_max,
                label= with(data,
-                           paste0("RMSE = ",signif(ajorant.divers::indic(v_obs, v_sim, 'RMSE', .poids = poids),3),
-                                  "\nRRMSE = ",round(ajorant.divers::indic(v_obs, v_sim, 'RRMSE', .poids = poids),2),
+                           paste0("RMSE = ",signif(pack.divers::indic(v_obs, v_sim, 'RMSE', .poids = poids),3),
+                                  "\nRRMSE = ",round(pack.divers::indic(v_obs, v_sim, 'RRMSE', .poids = poids),2),
                                   "\n",
-                                  "\nbiais = ",signif(ajorant.divers::indic(v_obs, v_sim, 'biais', .poids = poids),2),
+                                  "\nbiais = ",signif(pack.divers::indic(v_obs, v_sim, 'biais', .poids = poids),2),
                                   "\nN = ",sum(!is.na(v_obs) & poids != 0))),
                hjust = "left",
                vjust = "top",
@@ -77,11 +77,11 @@ graph_perf <- function(data, obs, sim, .variable = NA, .poids = NULL, .effet_dev
                x = axes_min,
                y = axes_max,
                label= with(data,
-                           paste0("\n\neff = ",round(ajorant.divers::indic(v_obs, v_sim, 'eff', .poids = poids),2))),
+                           paste0("\n\neff = ",round(pack.divers::indic(v_obs, v_sim, 'eff', .poids = poids),2))),
                hjust = "left",
                vjust = "top",
                lineheight = 0.8,
-               color = with(data, ifelse(ajorant.divers::indic(v_obs, v_sim, 'eff', .poids = poids) < 0, 'red', .couleur)))
+               color = with(data, ifelse(pack.divers::indic(v_obs, v_sim, 'eff', .poids = poids) < 0, 'red', .couleur)))
   }
 
   Graph
@@ -1039,5 +1039,136 @@ quelles_marges  <- function(plot) {
   list(marge_X = fixed_w_in, marge_Y = fixed_h_in)
 }
 
+
+
+
+
+#' Cassure de courbe
+#'
+#' Dans un graphique ggplot, introduit une cassure sur une courbe pour indiquer une rupture de continuité.
+#' Prise en compte de l'inclinaison de la coube et prise en compte de la taille rendu pour que l'inclunaison de la forme reste cohérente.
+#'
+#' @param graph graphique
+#' @param data données contenant la courbe pour laquelle on veut intreoduire une rupture
+#' @param X, Y les noms des colonnes. En characteres.
+#' @param groupe pour générer plusieurs breaks sur des lignes différentes
+#' @param filtre les points entre lesquels mettre des breaks
+#' @param tronc_X,tronc_Y est ce que l'axe est tronqué ?
+#' @param range_X,range_Y l'amplitude des données, si elle ne dépend pas uniquement des données fournies
+#' @param ratio_X_Y ratio X/Y si la zone de graphique n'est pas carrée
+#' @param linewidth largeur de ligne de la forme
+#' @param color couleur de la forme
+#' @param size taille de la forme
+#'
+#' @returns grphique ggplot
+#' @export
+#'
+#' @examples
+#'
+#' test <- data.frame(X =c(1:10,1:10,1:10),
+#'                    Y = c(1:10, 10:1, rep(5,10)),
+#'                    tronc_X = TRUE, tronc_Y = TRUE,
+#'                    gp = c(rep('A',10), rep('B',10), rep('C',10)))
+#' test$bk <- ifelse(test$X %in% c(2,3), TRUE, FALSE)
+#'
+#'
+#' graph_test <- ggplot(test, aes(X, Y, color = gp)) +
+#'   geom_line()
+#'
+#' geom_break(graph = graph_test,
+#'            data = test,
+#'            X='X', Y='Y',  # les noms des colonnes
+#'            groupe = 'gp', # pour générer plusieurs breaks sur des lignes différentes
+#'            filtre = 'bk', # les points entre lesquels mettre des breaks
+#'
+#'            ratio_X_Y = 1.5, size = 2) # apparence de la forme
+#'
+geom_break <- function(graph,
+                       data,
+                       X, Y,
+                       groupe,
+                       filtre,
+                       tronc_X = T, tronc_Y = F,
+                       range_Y = NULL,
+                       range_X = NULL,
+                       ratio_X_Y = 1,
+                       linewidth = 0.4, color = NULL, size = 1){
+
+
+  df_breaks0 <- data %>%
+    filter(!is.na(.data[[groupe]])) %>%
+    group_by(.data[[groupe]])
+
+  # amplitude des données
+  if(is.null(range_X))
+    range_X <- max(df_breaks0[,X]) - if(tronc_X){min(df_breaks0[,X])} else 0
+
+  if(is.null(range_Y))
+    range_Y <- max(df_breaks0[,Y]) - if(tronc_Y){min(df_breaks0[[Y]])} else 0
+
+  # ajustement à la taille de la zone
+  range_X <- range_X/ratio_X_Y
+
+  # ajustement de la taille de la forme désirée
+  range_X <- range_X * size
+  range_Y <- range_Y * size
+
+  # uniquement les points entre lesquels se trouvent les breaks
+  df_breaks0 <- df_breaks0 %>%
+    filter(.data[[filtre]]) %>%
+    arrange(.data[[X]]) %>%
+    as.data.frame()
+
+  # calculs des extrémités des formes des breaks
+  df_breaks <- data.frame()
+
+  gpe_i=data[25,groupe]
+  for(gpe_i in unique(df_breaks0[,groupe])){ # courbe par courbe
+    df_i <- df_breaks0 %>%
+      filter(.data[[groupe]] == gpe_i) %>%
+      as.data.frame()
+
+    points <- fct_breakpoints(x1 = first(df_i[,X]),
+                              y1 = first(df_i[,Y]),
+                              x2 = last(df_i[,X]),
+                              y2 = last(df_i[,Y]),
+                              range_X, range_Y)
+    points[,groupe] <- gpe_i
+
+    df_breaks <- bind_rows(df_breaks, points)
+  }
+
+  if(nrow(df_breaks)){
+
+    df_breaks_rect <- bind_rows(
+      select(df_breaks, all_of(groupe), XX = x1, YY = y1) %>% arrange(XX),
+      select(df_breaks, all_of(groupe), XX = x2, YY = y2) %>% arrange(-XX)
+    )
+
+    graph <- graph +
+      geom_polygon(data= df_breaks_rect,
+                   aes(x = XX, y = YY, group = .data[[groupe]]),
+                   fill = 'white',
+                   color= 'white')
+
+    if(is.null(color)){
+      graph <- graph +
+        geom_segment(data = df_breaks,
+                     aes(x = x1, xend = x2,
+                         y = y1, yend = y2),
+                     linewidth = linewidth)
+    } else{
+      graph <- graph +
+        geom_segment(data = df_breaks,
+                     aes(x = x1, xend = x2,
+                         y = y1, yend = y2),
+                     linewidth = linewidth,
+                     color = color)
+    }
+
+  }
+
+  graph
+}
 
 

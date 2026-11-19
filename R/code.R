@@ -150,7 +150,7 @@ graph_perf_ROC <- function(data, obs, sim, seuil_obs, seuil_sim){
 
 
   # ~~~~{    Graphique    }~~~~
-  Graph <- data |>
+  Graph <- data %>%
     ggplot(aes(.[,n_sim], .[,n_obs])) +
 
     # ~~~~{    Cadrans    }~~~~
@@ -296,7 +296,9 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
   # ~~~~{    Corps du graphique    }~~~~
   # assemblage des titres de lignes avec tous les graphs pour former le corps
   grid_graph_1 <- cowplot::plot_grid(plotlist = list_graph,
-                                     ncol = ncol_vrai, .rel_widths = .rel_widths, .rel_heights = rel_heights_,
+                                     ncol = ncol_vrai,
+                                     rel_widths = .rel_widths,
+                                     rel_heights = rel_heights_,
                                      labels = names(list_graph),
                                      label_size = 5*base_height,
                                      label_x = label_X,
@@ -311,7 +313,7 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
   titre2 <- titre
   # si le titre est vraiment trop long par rapport à la place disponible et la taille optimale, on le coupe en plusieurs lignes
   if(!grepl('\n',titre)){
-    largeur_titre <- str_count(titre,'.')
+    largeur_titre <- stringr::str_count(titre,'.')
 
     ratio_titre <- largeur_max /(taille_optimale*largeur_titre)
 
@@ -355,12 +357,12 @@ fig_grid <- function(list_graph, titre, fichier, ncol,
 
   # si il y a une légende, elle est sur la même ligne que le titre
   if(!is.null(.legende)){
-    graph_titre <- cowplot::plot_grid(graph_titre, .legende, ncol=2, .rel_widths = c(largeur_max/105, .L_dim[1]))
+    graph_titre <- cowplot::plot_grid(graph_titre, .legende, ncol=2, rel_widths = c(largeur_max/105, .L_dim[1]))
     hauteur_titre <- max(hauteur_titre, .L_dim[2]/base_height)
   }
 
   # ~~~~{    Assemblage de la ligne titre avec le corps du graph    }~~~~
-  grid_graph_2 <- cowplot::plot_grid(graph_titre, grid_graph_1, ncol=1, .rel_heights = c(hauteur_titre, nrow)) # plus il y a de colones, plus le titre est gros
+  grid_graph_2 <- cowplot::plot_grid(graph_titre, grid_graph_1, ncol=1, rel_heights = c(hauteur_titre, nrow)) # plus il y a de colones, plus le titre est gros
 
   # ~~~~{    Enregistrement    }~~~~
   cowplot::save_plot(fichier, grid_graph_2,
@@ -566,11 +568,13 @@ rf_fig <- function(random_forest, titre = names(random_forest), fichier, .expl_v
   }
 
 
-  cowplot::fig_grid(list_graph = liste_graph_rf,
-                    titre      = titre,
-                    fichier    = fichier,
-                    ncol       = 2, rel_heights = c(1, if(.expl_var) 0.1 else NULL),
-                    base_dim   = c(4.5, ifelse(.expl_var, 2.5, 4)), rel_widths = c(0.66,0.34))
+  fig_grid(list_graph = liste_graph_rf,
+           titre      = titre,
+           fichier    = fichier,
+           ncol       = 2,
+           .rel_heights = c(1, if(.expl_var) 0.1 else NULL),
+           .base_dim   = c(4.5, ifelse(.expl_var, 2.5, 4)),
+           .rel_widths = c(0.66,0.34))
 }
 
 

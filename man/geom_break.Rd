@@ -57,7 +57,7 @@ test <- data.frame(X =c(1:10,1:10,1:10),
                    Y = c(1:10, 10:1, rep(5,10)),
                    tronc_X = TRUE, tronc_Y = TRUE,
                    gp = c(rep('A',10), rep('B',10), rep('C',10)))
-test$bk <- ifelse(test$X \%in\% c(2,3), TRUE, FALSE))
+test$bk <- ifelse(test$X \%in\% c(2,3), TRUE, FALSE)
 
 
 graph_test <- ggplot(test, aes(X, Y, color = gp)) +
@@ -65,11 +65,10 @@ graph_test <- ggplot(test, aes(X, Y, color = gp)) +
 
 geom_break(graph = graph_test,
            data = test,
-           X='X', Y='Y', # les noms des colonnes
+           X='X', Y='Y',  # les noms des colonnes
            groupe = 'gp', # pour générer plusieurs breaks sur des lignes différentes
            filtre = 'bk', # les points entre lesquels mettre des breaks
 
-           ratio_X_Y = 2,
-           size = 2) # apparence de la forme
+           ratio_X_Y = 1.5, size = 2) # apparence de la forme
 
 }

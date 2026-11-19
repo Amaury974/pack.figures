@@ -189,9 +189,9 @@ leaflet::leaflet() |>
                       icon = my_markers[names(list_col)])
 ```
 
-    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpMNiNqX/file4e601f5d6b09.html screenshot completed
+    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpAj5npG/file3ef44c78f84.html screenshot completed
 
-<img src="man/figures/README-leaflet-capture-1.png" alt="" width="100%" /><img src="man/figures/README-leaflet.png" alt="" width="100%" />
+<img src="man/figures/README-leaflet-capture-1.png" alt="" width="100%" />
 
 ### Département à partir de coordonnées
 
@@ -224,16 +224,9 @@ head(res$centroides)
 p <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
   geom_point() +
   labs(caption = "Source : mtcars")
+url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
 
-# image de fond générée pour l'exemple
-img <- tempfile(fileext = ".png")
-png(img, width = 400, height = 300)
-par(mar = c(0, 0, 0, 0)); plot.new()
-rect(0, 0, 1, 1, col = "#dbe9f4", border = NA)
-text(0.5, 0.5, "LOGO", cex = 6, col = "#9bb7d0")
-invisible(dev.off())
-
-save_plot_bg(p, "man/figures/README-plot-bg.png", image_path = img,
+save_plot_bg(p, "man/figures/README-plot-bg.png", image_path = url_img,
              width = 6, height = 4)
 knitr::include_graphics("man/figures/README-plot-bg.png")
 ```
@@ -298,7 +291,11 @@ rf <- randomForest::randomForest(Sepal.Length ~ ., data = iris, importance = TRU
 
 rf_fig(rf, titre = "Importance des variables",
        fichier = "man/figures/README-rf-fig.png")
+
+knitr::include_graphics("man/figures/README-rf-fig.png")
 ```
+
+<img src="man/figures/README-rf-fig.png" alt="" width="100%" />
 
 ## Licence
 

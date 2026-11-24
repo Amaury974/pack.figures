@@ -978,12 +978,15 @@ add_background_image <- function(plot, image_path, width, height,
 
 #' Sauvegarde un ggplot avec image de fond (png uniquement)
 #'
-#' @param plot        objet ggplot (sans l'image de fond -- elle est ajoutee ici)
+#' @param plot        objet ggplot (sans l'image de fond -- elle est ajoutée ici)
 #' @param filename    chemin de sortie, ex. "plot1.png"
 #' @param image_path  chemin de l'image de fond
 #' @param width,height dimensions d'export en pouces
-#' @param height_frac fraction de la hauteur du panel occupee par l'image
-#' @param res         resolution (dpi)
+#' @param height_frac fraction de la hauteur du panel occupée par l'image
+#' @param res         résolution (dpi)
+#' @param ...         autres arguments fournies à add_background_image : x, y,
+#'                    bg.fill. Respectivement les coordonnées relative du centre
+#'                    de l'image et la couleur de l'arrière plan
 #'
 #' @export
 #'
@@ -996,7 +999,7 @@ add_background_image <- function(plot, image_path, width, height,
 #' url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
 #'
 #' save_plot_bg(p1, "plot1.png", url_img, width = 6,  height = 4)
-#' save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7)
+#' save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7, x = 0.7, y = 0.3)
 #'
 #' # Chaque appel recalcule la taille reelle du panel pour CE plot (avec ou sans
 #' # legende/caption) et redimensionne l'image en consequence : jamais de
@@ -1297,21 +1300,20 @@ carto_974 <- function(data, col.fill, .code_insee = NULL, .ombrage = TRUE, .labe
 
   if(.ombrage & exists('r_ombrage'))
     g_i <- ggplot() +
-    tidyterra::geom_spatraster(data = r_ombrage, aes(alpha = hillshade), fill = 'black')
+    tidyterra::geom_spatraster(data = r_ombrage, aes(alpha = hillshade), fill = 'black')+
+    scale_alpha_continuous(range = c(1, 0), guide = 'none')
 
   g_i <- g_i +
-    scale_alpha_continuous(range = c(1, 0), guide = 'none') +
-    geom_sf(data = st_boundary(sf_communes),
-            linewidth = 0.03) +
     geom_sf(data = st_difference(emprise_large, st_union(sf_region)),
             color = 'white',
             fill = 'white') +
+    geom_sf(data = st_boundary(sf_communes),
+            linewidth = 0.03) +
     geom_sf(data = sf_com_i,
             aes(fill = .data[[col.fill]]),
             color = 'white',
             lwd  = 0.05,
-            alpha = ifelse(.ombrage, 0.7, 1)
-    ) +
+            alpha = ifelse(.ombrage, 0.7, 1)) +
 
     scale_fill_viridis_c(name = NULL) +
     coord_sf(xlim = emprise[c(1,3)], ylim = emprise[c(2,4)]) +

@@ -16,7 +16,7 @@ save_plot_bg(
 )
 }
 \arguments{
-\item{plot}{objet ggplot (sans l'image de fond -- elle est ajoutee ici)}
+\item{plot}{objet ggplot (sans l'image de fond -- elle est ajoutée ici)}
 
 \item{filename}{chemin de sortie, ex. "plot1.png"}
 
@@ -24,9 +24,13 @@ save_plot_bg(
 
 \item{width, height}{dimensions d'export en pouces}
 
-\item{height_frac}{fraction de la hauteur du panel occupee par l'image}
+\item{height_frac}{fraction de la hauteur du panel occupée par l'image}
 
-\item{res}{resolution (dpi)}
+\item{res}{résolution (dpi)}
+
+\item{...}{autres arguments fournies à add_background_image : x, y,
+bg.fill. Respectivement les coordonnées relative du centre
+de l'image et la couleur de l'arrière plan}
 }
 \description{
 Sauvegarde un ggplot avec image de fond (png uniquement)
@@ -40,7 +44,7 @@ p2 <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
 url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
 
 save_plot_bg(p1, "plot1.png", url_img, width = 6,  height = 4)
-save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7)
+save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7, x = 0.7, y = 0.3)
 
 # Chaque appel recalcule la taille reelle du panel pour CE plot (avec ou sans
 # legende/caption) et redimensionne l'image en consequence : jamais de

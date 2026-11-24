@@ -218,7 +218,7 @@ leaflet::leaflet() |>
                       icon = my_markers[names(list_col)])
 ```
 
-    #> file:///C:/Users/Delagarde/AppData/Local/Temp/Rtmp6H4gPH/file4f18ea13225.html screenshot completed
+    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpmmVHbr/file4c98477d6349.html screenshot completed
 
 <img src="man/figures/README-leaflet-capture-1.png" alt="" width="100%" />
 
@@ -237,7 +237,8 @@ correspondant est accessible ; l’exemple ci-dessous s’en passe.
 communes <- data.frame(code_insee = c("97411", "97415", "97416", "97414"),
                        taux       = c(12.5, 8.3, 15.1, 10.2))
 
-res <- carto_974(communes, col.fill = "taux", .ombrage = FALSE, .label = TRUE)
+res <- carto_974(communes, col.fill = "taux", .label = TRUE)
+#> <SpatRaster> resampled to 500850 cells.
 res[[1]]
 ```
 
@@ -281,7 +282,7 @@ p <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
 url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
 
 save_plot_bg(p, "man/figures/README-plot-bg.png", image_path = url_img,
-             width = 6, height = 4)
+             width = 6, height = 4, x = 0.7, y = 0.3)
 knitr::include_graphics("man/figures/README-plot-bg.png")
 ```
 

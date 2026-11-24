@@ -224,7 +224,7 @@ webshot2::webshot(html_tmp, file = "man/figures/README-leaflet.png",
 
 Les communes sont jointes aux données par leur code INSEE (colonne détectée automatiquement si son nom contient « insee », ou indiquée via `.code_insee`). Seules les communes présentes dans les données sont dessinées. La fonction renvoie une liste : la carte, puis la largeur et la hauteur suggérées pour l'export.
 
-L'ombrage du relief (`.ombrage = TRUE`) n'est appliqué que si le raster correspondant est accessible ; l'exemple ci-dessous s'en passe.
+L'ombrage du relief (`.ombrage = TRUE`) n'est appliqué que si le raster correspondant est accessible.
 
 ```{r carto-974, eval = has("sf")}
 communes <- data.frame(code_insee = c("97411", "97415", "97416", "97414"),

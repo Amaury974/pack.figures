@@ -558,7 +558,7 @@ theme_carto <- function(base_size = 11, base_family = "", ...) {
       plot.subtitle = ggplot2::element_text(color = "#4D4D4DFF"),
       plot.caption = ggplot2::element_text(size = 7, color = "#4D4D4DFF"),
       plot.caption.position = "plot",
-      legend.key.height = ggplot2::unit(1, "null"),
+      legend.key.height = ggplot2::unit(0.8, "null"),
       legend.key.width = ggplot2::unit(0.3, "cm")
     )
 }

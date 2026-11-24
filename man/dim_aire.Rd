@@ -19,5 +19,29 @@ dim_aire(ratio, aire = 30, marge_X = 0, marge_Y = 1)
 liste de longueur 2 : X (largeur) et Y (hauteur)
 }
 \description{
-Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée
+Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée.
+utile pour automatiser un export de carte dont l'aspect ratio peut varier.
+}
+\examples{
+
+# utilisation simple : dimention avec un ratio et une aire donnée
+dim_aire(ratio = 4/3, aire = 30)
+
+# utilisation en contexte SIG, ratio fixé par les données :
+# couche de base de la carte - département de La Réunion
+sf_region <- sf::st_read(paste0(system.file('extdata', package = 'pack.figures'),'/admin_reunion.gpkg'), layer = 'region', quiet = TRUE)
+emprise <- sf::st_bbox(sf_region) # emprise de la couche
+ratio_p <- unname(diff(emprise[c(1,3)])/diff(emprise[c(2,4)])) # ratio de la couche
+
+p <- ggplot2::ggplot() +
+ggplot2::geom_sf(data = sf_region) +
+ggplot2::labs(title = "La Réunion",
+     caption = "source : IGN")
+
+marges <- quelles_marges(p)
+
+# dimensions adaptés à la carte pour une aire totale de 30 in²
+dim_aire(ratio = ratio_p, aire = 30,
+         marge_X = marges$marge_X, marge_Y = marges$marge_Y)
+
 }

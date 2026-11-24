@@ -2,7 +2,7 @@
 % Please edit documentation in R/code.R
 \name{add_background_image}
 \alias{add_background_image}
-\title{Ajoute une image d'arriere-plan non deformee a un ggplot, sous le quadrillage}
+\title{Ajoute une image d'arrière-plan non déformée a un ggplot, sous le quadrillage}
 \usage{
 add_background_image(
   plot,
@@ -20,20 +20,20 @@ add_background_image(
 
 \item{image_path}{chemin vers l'image (png, jpg, etc.)}
 
-\item{width, height}{dimensions EXACTES d'export prevues, en pouces
-(doivent correspondre a celles utilisees dans png())}
+\item{width, height}{dimensions EXACTES d'export prévues, en pouces
+(doivent correspondre a celles utilisées dans png())}
 
 \item{height_frac}{fraction de la hauteur du panel que l'image doit occuper
-(0.5 = 50\%). La largeur est deduite automatiquement du
-ratio natif de l'image : jamais de deformation.}
+(0.5 = 50\%). La largeur est déduite automatiquement du
+ratio natif de l'image : jamais de déformation.}
 
 \item{x, }{y       position du centre de l'image en npc du panel (0.5,0.5 = centre)}
 
-\item{bg_fill}{couleur du fond place derriere l'image (defaut "white")}
+\item{bg_fill}{couleur du fond place derrière l'image (défaut "white")}
 }
 \value{
 le ggplot avec l'image comme panel.background (donc sous panel.grid)
 }
 \description{
-Ajoute une image d'arriere-plan non deformee a un ggplot, sous le quadrillage
+Ajoute une image d'arrière-plan non déformée a un ggplot, sous le quadrillage
 }

@@ -5,70 +5,58 @@
 \title{Cassure de courbe}
 \usage{
 geom_break(
-  graph,
-  data,
-  X,
-  Y,
-  groupe,
-  filtre,
-  tronc_X = T,
-  tronc_Y = F,
-  range_Y = NULL,
-  range_X = NULL,
-  ratio_X_Y = 1,
-  linewidth = 0.4,
-  color = NULL,
-  size = 1
+  mapping = NULL,
+  data = NULL,
+  stat = "identity",
+  position = "identity",
+  ...,
+  size = 0.04,
+  gap = 0.015,
+  angle = 60,
+  aspect = 1,
+  na.rm = FALSE,
+  show.legend = NA,
+  inherit.aes = TRUE
 )
 }
 \arguments{
-\item{graph}{graphique}
+\item{mapping}{idem ggplot2}
 
-\item{data}{données contenant la courbe pour laquelle on veut intreoduire une rupture}
+\item{data}{idem ggplot2. usage conseillé : data = ~ filter(.x, coupure) avec coupure le champs indiquant (logical) les deux points entre lesquels s'insère la rupture de courbe}
 
-\item{X, }{Y les noms des colonnes. En characteres.}
+\item{stat}{idem ggplot2}
 
-\item{groupe}{pour générer plusieurs breaks sur des lignes différentes}
+\item{position}{idem ggplot2}
 
-\item{filtre}{les points entre lesquels mettre des breaks}
+\item{...}{idem ggplot2}
 
-\item{tronc_X, tronc_Y}{est ce que l'axe est tronqué ?}
+\item{size}{longueur des slashes}
 
-\item{range_X, range_Y}{l'amplitude des données, si elle ne dépend pas uniquement des données fournies}
+\item{gap}{espace entre les slashes}
 
-\item{ratio_X_Y}{ratio X/Y si la zone de graphique n'est pas carrée}
+\item{angle}{angle des slashes par rapport à la courbe}
 
-\item{linewidth}{largeur de ligne de la forme}
+\item{aspect}{ratio largeur/hauteur du panneau}
 
-\item{color}{couleur de la forme}
+\item{na.rm}{idem ggplot2}
 
-\item{size}{taille de la forme}
-}
-\value{
-grphique ggplot
+\item{show.legend}{idem ggplot2}
+
+\item{inherit.aes}{idem ggplot2}
 }
 \description{
 Dans un graphique ggplot, introduit une cassure sur une courbe pour indiquer une rupture de continuité.
-Prise en compte de l'inclinaison de la coube et prise en compte de la taille rendu pour que l'inclunaison de la forme reste cohérente.
 }
 \examples{
 
 test <- data.frame(X =c(1:10,1:10,1:10),
                    Y = c(1:10, 10:1, rep(5,10)),
-                   tronc_X = TRUE, tronc_Y = TRUE,
                    gp = c(rep('A',10), rep('B',10), rep('C',10)))
-test$bk <- ifelse(test$X \%in\% c(2,3), TRUE, FALSE)
+test$coupure <- ifelse(test$X \%in\% c(2,3), TRUE, FALSE)
 
 
 graph_test <- ggplot(test, aes(X, Y, color = gp)) +
-  geom_line()
-
-geom_break(graph = graph_test,
-           data = test,
-           X='X', Y='Y',  # les noms des colonnes
-           groupe = 'gp', # pour générer plusieurs breaks sur des lignes différentes
-           filtre = 'bk', # les points entre lesquels mettre des breaks
-
-           ratio_X_Y = 1.5, size = 2) # apparence de la forme
+  geom_line()+
+  geom_break(data = ~ filter(.x, coupure), aspect = 2, size = 0.1)
 
 }

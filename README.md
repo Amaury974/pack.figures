@@ -10,8 +10,9 @@
 <!-- badges: end -->
 
 Package R regroupant des fonctions pour les **graphiques** (ggplot2) et
-la **cartographie** (Leaflet) : graphiques préconfigurés, mise en forme
-et export de figures, palettes de couleurs, etc.
+la **cartographie** (ggplot2, Leaflet) : thèmes, graphiques
+préconfigurés, mise en forme et export de figures, palettes de couleurs,
+cartes de La Réunion, etc.
 
 ## Installation
 
@@ -29,35 +30,41 @@ Le package dépend de
 Certaines fonctions nécessitent des packages supplémentaires, vérifiés à
 l’appel :
 
-| Package            | Utilisé par                                |
-|--------------------|--------------------------------------------|
-| `cowplot`          | `fig_grid()`, `rf_fig()`                   |
-| `agricolae`        | `boxplot2()`                               |
-| `colorspace`       | `mega_Palette()`                           |
-| `sf`, `sp`, `maps` | `quel_dep()`                               |
-| `leaflet`          | `leaf_colored_markers()`                   |
-| `randomForest`     | `rf_fig()`                                 |
-| `magick`           | `add_background_image()`, `save_plot_bg()` |
+| Package              | Utilisé par                                  |
+|----------------------|----------------------------------------------|
+| `cowplot`            | `fig_grid()`, `rf_fig()`                     |
+| `agricolae`          | `boxplot2()`                                 |
+| `colorspace`         | `mega_Palette()`                             |
+| `sf`, `sp`, `maps`   | `quel_dep()`                                 |
+| `leaflet`            | `leaf_colored_markers()`                     |
+| `sf`                 | `carto_974()`                                |
+| `terra`, `tidyterra` | `carto_974()` (ombrage du relief uniquement) |
+| `randomForest`       | `rf_fig()`                                   |
+| `magick`             | `add_background_image()`, `save_plot_bg()`   |
 
 ``` r
 install.packages(c("cowplot", "agricolae", "colorspace", "sf", "sp", "maps",
-                   "leaflet", "randomForest", "magick"))
+                   "leaflet", "randomForest", "magick", "terra", "tidyterra"))
 ```
 
-## ⚠️ Options ggplot2 modifiées au chargement
+## ⚠️ Effets de bord au chargement
 
-Au chargement (`library(pack.figures)`), le package modifie le thème
-global de ggplot2 :
+Au chargement (`library(pack.figures)`), le package :
 
-- thème `theme_minimal()` par défaut ;
-- légende en bas, disposée horizontalement ;
-- titre aligné à gauche, sous-titre et légende (`caption`) en gris ;
-- palette continue `viridis` pour `colour` et `fill`.
+- **réinitialise les variables d’environnement `PROJ_LIB` et
+  `PROJ_DATA`** (`Sys.unsetenv()`), pour éviter les conflits de versions
+  de PROJ avec `sf` ;
+- définit [`theme_basique()`](#thèmes) comme thème ggplot2 par défaut
+  (`theme_minimal()`, légende en bas, titre aligné à gauche, sous-titre
+  et légende `caption` en gris) ;
+- règle la palette continue de ggplot2 sur `viridis` (`colour` et
+  `fill`) ;
+- règle `dplyr.summarise.inform = FALSE` (messages de `summarise()`
+  masqués).
 
-Il règle aussi `dplyr.summarise.inform = FALSE` (messages de
-`summarise()` masqués).
-
-Pour désactiver ces réglages, **avant** de charger le package :
+Des messages l’indiquent dans la console. La réinitialisation de
+`PROJ_LIB` et `PROJ_DATA` est systématique ; les réglages ggplot2 et
+dplyr peuvent être désactivés **avant** de charger le package :
 
 ``` r
 options(ggplot.change.default.options = FALSE,
@@ -75,7 +82,14 @@ library(pack.figures)
 | `graph_perf_ROC()` | Graphique observé / simulé en quadrants selon des seuils, avec sensibilité, spécificité, taux de bien prédits et indice de Youden |
 | `boxplot2()` | Boxplot par catégorie avec test de Tukey (groupes de significativité), classé par médiane |
 | `rf_fig()` | Figure d’analyse d’une forêt aléatoire : %IncMSE et IncNodePurity |
-| `geom_break()` | Ajoute une cassure sur une courbe pour indiquer une rupture de continuité |
+| `geom_break()` | Couche ggplot2 (`+ geom_break()`) ajoutant une cassure (deux slashes) sur une courbe pour indiquer une rupture de continuité |
+
+### Thèmes
+
+| Fonction | Description |
+|----|----|
+| `theme_basique()` | Thème pour les graphiques, basé sur `theme_minimal()` : légende en bas, sous-titre et source en gris. Appliqué par défaut au chargement du package |
+| `theme_carto()` | Thème pour les cartes, basé sur `theme_void()` |
 
 ### Mise en page et export
 
@@ -98,6 +112,7 @@ library(pack.figures)
 
 | Fonction | Description |
 |----|----|
+| `carto_974()` | Carte ggplot2 des communes de La Réunion colorées selon une variable (jointure par code INSEE, ombrage du relief optionnel) ; renvoie la carte et les dimensions d’export suggérées |
 | `quel_dep()` | Identifie le département à partir de coordonnées (colonnes longitude/latitude) ; renvoie les données enrichies et les centroïdes des départements |
 | `leaf_colored_markers()` | Crée une liste de marqueurs colorés pour Leaflet (`leaflet::iconList()`) |
 
@@ -108,9 +123,23 @@ La documentation détaillée de chaque fonction est accessible via
 
 ``` r
 library(pack.figures)
-#> Le chargement a nécessité le package : ggplot2
 #> Warning: le package 'ggplot2' a été compilé avec la version R 4.4.3
 ```
+
+### Thèmes
+
+`theme_basique()` est appliqué par défaut ; on peut aussi l’appeler
+explicitement, ou utiliser `theme_carto()` pour les cartes.
+
+``` r
+p_theme <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+  geom_point() +
+  labs(title = "Titre", subtitle = "Sous-titre", caption = "Source : mtcars")
+
+p_theme + theme_basique()
+```
+
+<img src="man/figures/README-themes-1.png" alt="" width="100%" />
 
 ### Performance observé / simulé
 
@@ -144,21 +173,21 @@ boxplot2(iris, x = "Species", y = "Sepal.Length")
 
 ### Cassure de courbe
 
+`geom_break()` s’ajoute au graphique comme une couche ggplot2. Son
+argument `data` désigne les deux points entre lesquels la cassure
+s’insère ; ici une fonction filtre le champ logique `coupure`.
+
 ``` r
 test <- data.frame(X  = c(1:10, 1:10, 1:10),
                    Y  = c(1:10, 10:1, rep(5, 10)),
                    gp = c(rep("A", 10), rep("B", 10), rep("C", 10)))
-test$bk <- test$X %in% c(2, 3)
+test$coupure <- test$X %in% c(2, 3)
 
-graph_test <- ggplot(test, aes(X, Y, color = gp)) +
-  geom_line()
-
-geom_break(graph = graph_test,
-           data = test,
-           X = "X", Y = "Y",
-           groupe = "gp",   # une cassure par courbe
-           filtre = "bk",   # points entre lesquels placer la cassure
-           ratio_X_Y = 1.5, size = 2)
+ggplot(test, aes(X, Y, color = gp)) +
+  geom_line() +
+  geom_break(data = ~ dplyr::filter(.x, coupure),
+             aspect = 2,   # ratio largeur/hauteur du panneau
+             size = 0.1)   # longueur des slashes
 ```
 
 <img src="man/figures/README-geom-break-1.png" alt="" width="100%" />
@@ -189,9 +218,34 @@ leaflet::leaflet() |>
                       icon = my_markers[names(list_col)])
 ```
 
-    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpAj5npG/file3ef44c78f84.html screenshot completed
+    #> file:///C:/Users/Delagarde/AppData/Local/Temp/Rtmp6H4gPH/file4f18ea13225.html screenshot completed
 
 <img src="man/figures/README-leaflet-capture-1.png" alt="" width="100%" />
+
+### Carte des communes de La Réunion
+
+Les communes sont jointes aux données par leur code INSEE (colonne
+détectée automatiquement si son nom contient « insee », ou indiquée via
+`.code_insee`). Seules les communes présentes dans les données sont
+dessinées. La fonction renvoie une liste : la carte, puis la largeur et
+la hauteur suggérées pour l’export.
+
+L’ombrage du relief (`.ombrage = TRUE`) n’est appliqué que si le raster
+correspondant est accessible ; l’exemple ci-dessous s’en passe.
+
+``` r
+communes <- data.frame(code_insee = c("97411", "97415", "97416", "97414"),
+                       taux       = c(12.5, 8.3, 15.1, 10.2))
+
+res <- carto_974(communes, col.fill = "taux", .ombrage = FALSE, .label = TRUE)
+res[[1]]
+```
+
+<img src="man/figures/README-carto-974-1.png" alt="" width="100%" />
+
+``` r
+ggplot2::ggsave("carte.png", res[[1]], width = res[[2]], height = res[[3]])
+```
 
 ### Département à partir de coordonnées
 

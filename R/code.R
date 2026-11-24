@@ -1,4 +1,14 @@
 
+### ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ ###
+#                                                                              #
+####  >> FIGURES                                                            ####
+#                                                                              #
+### ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ ###
+
+### ________________________________________________________________________ ###
+#### FIGURES > Modélisation                                                 ####
+
+
 #' Graphique de performances standard
 #'
 #' Graphique ggplot2 observé / simulé avec indicateurs de performances.
@@ -166,212 +176,6 @@ graph_perf_ROC <- function(data, obs, sim, seuil_obs, seuil_sim){
 
   Graph
 }
-
-
-#' Multitude de graphiques sur une page
-#'
-#' Arrange et exporte plusieurs graphique en grille sur une page.
-#'
-#' @param list_graph Liste des graphiques à intégrer à la figure.
-#' @param titre Titre de la figure.
-#' @param fichier Fichier de destination de la figure.
-#' @param ncol Nombre de colones de graphiques. Le nombre de ligne est déduit du nombre de graphiques à afficher.
-#' @param .base_dim Dimension x, y des graphiques de base. (en inches)
-#' @param .rel_widths Vecteur, largeur relative de chaque colonne.
-#'   Le nombre d'éléments doit être égale au nombre de colonnes.
-#' @param .rel_heights Vecteur, hauteur relative de chaque colonne.
-#'   Le nombre d'éléments doit être égale au nombre de lignes.
-#' @param .noms_lignes Vecteur. Label des lignes de graphique.
-#' @param .noms_col Vecteur. Label des colonnes de graphiques.
-#' @param .legende Graphique de égende, affiché sur la même ligne que le titre.
-#'   A utiliser lorsque la légende est la même pour tous les graphiques.
-#' @param .L_dim dimensions x, y de la légende (en inches).
-#' @param .label_position alignement des titres de ligne et colonne: 0 à gauche, 0.5 au centre et 1 à droite.
-#' @param .espace_insecable charactère utilisé comme espace insécable dans le titre.
-#'
-#' @section Erreurs connues:
-#' une erreur a été observée dans plot_grid() pour des graph tels que :
-#' `ggplot() +`
-#'  `geom_point(data = df, aes(x = df[,var1], y = var2))`
-#'
-#'  => Les points étaient mélangés d'un graph à l'autre.
-#'  Il faut privilégier `.data[[var]]` à `data.frame[[,var]]` ou `aes_string(var, 'RF_votes')`.
-#'
-#' @section Futurs évolutions:
-#' Les rel_heights et rel_widths agrandissent la taille de chaque graph.
-#' Il faudrait modifier les dims finales du graph car pour l'instant elle sont calculées pour tous les graphs à 1.
-#'
-#' @returns Graphique sauvegardé directement dans `fichier`.
-#' @import ggplot2
-#' @export
-fig_grid <- function(list_graph, titre, fichier, ncol,
-                     .base_dim = c(3, 2), .rel_widths = 1, .rel_heights = 1,
-                     .noms_lignes = NULL, .noms_col = NULL,
-                     .legende = NULL, .L_dim = c(2, 2),
-                     .label_position = 1, .espace_insecable = '_'){
-
-
-  if (!requireNamespace("cowplot", quietly = TRUE)) {
-    stop(
-      "Vous devez installer le package \"cowplot\" pour utiliser cette fonction.",
-      call. = FALSE
-    )
-  }
-
-
-  base_width  = .base_dim[1]
-  base_height = .base_dim[2]
-
-  nrow <- ceiling(length(list_graph)/ncol)
-  nrow_vrai <- nrow
-  ncol_vrai <- ncol
-
-  # ligne de titres de colonnes
-  position <- 0
-  if(!is.null(.noms_col)){
-    graphs_col <- list()
-    for(noms_col_i in .noms_col){
-      # print(position)
-      position <- position +1
-      graphs_col[[position]] <- cowplot::ggdraw() +
-        cowplot::draw_label(noms_col_i,
-                            fontface = 'bold',
-                            size = base_height * 105/stringr::str_count(noms_col_i))
-
-    }
-    list_graph <- append(graphs_col, list_graph)
-
-    if(length(.rel_heights) == 1){
-      .rel_heights <- c(0.2, rep(.rel_heights, nrow))
-    } else .rel_heights <- c(0.2, .rel_heights)
-
-    nrow_vrai <- nrow+1
-    if(!is.null(.noms_lignes)) .noms_lignes <- c('',.noms_lignes)
-
-  }
-
-  # colonne de titres de lignes
-  position <- 0
-  if(!is.null(.noms_lignes)){
-    for(noms_ligne_i in .noms_lignes){
-      # print(position)
-      graph_ligne <- cowplot::ggdraw() +
-        cowplot::draw_label(noms_ligne_i,
-                            fontface = 'bold',
-                            angle = 90,
-                            size = base_height * 105/stringr::str_count(noms_ligne_i))
-
-      list_graph <- append(list_graph,
-                           list(graph_ligne),
-                           position)
-
-      position <- position + ncol +1
-    }
-
-    if(length(.rel_widths) == 1){
-      .rel_widths <- c(0.2, rep(.rel_widths, ncol))
-    } else .rel_widths <- c(0.2, .rel_widths)
-
-    ncol_vrai <- ncol+1
-  }
-
-  # ~~~~{    ajout de 'marges' entre les lignes pour éviter les chevauchements    }~~~~
-  for(position in 2*(1:nrow_vrai-1)*ncol_vrai){
-    # graph_ligne <- ggdraw() + draw_label('test', fontface = 'bold', size= 10)
-
-    list_graph <- append(list_graph,
-                         # list(rep(ggdraw(), ncol)),
-
-                         rep(list(NULL), ncol_vrai),
-                         position)
-  }
-
-  rel_heights_ <- rep(0.05, 2*nrow_vrai)
-  rel_heights_[2*(1:nrow_vrai)] <- .rel_heights
-
-  # ~~~~{    position des titres    }~~~~
-  label_X     <- c(0.01,0.5,0.99)[1+.label_position*2]
-  label_hjust <- c('left',0,'right')[1+.label_position*2]
-
-  # ~~~~{    Corps du graphique    }~~~~
-  # assemblage des titres de lignes avec tous les graphs pour former le corps
-  grid_graph_1 <- cowplot::plot_grid(plotlist = list_graph,
-                                     ncol = ncol_vrai,
-                                     rel_widths = .rel_widths,
-                                     rel_heights = rel_heights_,
-                                     labels = names(list_graph),
-                                     label_size = 5*base_height,
-                                     label_x = label_X,
-                                     label_y = 1,
-                                     hjust = label_hjust,
-                                     vjust = 'bottom')
-
-  # ~~~~{    Mise en forme du titre    }~~~~
-  largeur_max <- (base_width * ncol - as.numeric(!is.null(.legende)) * .L_dim[1]) * 105
-  taille_optimale <- base_width * sqrt(ncol)* sqrt(nrow) * 6.3
-
-  titre2 <- titre
-  # si le titre est vraiment trop long par rapport à la place disponible et la taille optimale, on le coupe en plusieurs lignes
-  if(!grepl('\n',titre)){
-    largeur_titre <- stringr::str_count(titre,'.')
-
-    ratio_titre <- largeur_max /(taille_optimale*largeur_titre)
-
-    # supérieur à 0.7 - tout sur la même ligne
-    taille_titre <- taille_optimale * min(1, ratio_titre)
-
-    # inférieur à 0.7 - on coupe en plusieurs lignes
-    if(ratio_titre < 0.6)
-      titre2 <- strwrap(titre, round(largeur_max/(0.6*taille_optimale))) |>
-      paste(collapse = '\n')
-
-  }
-
-  nline <- stringr::str_count(titre2,'\n')+1
-
-  if(grepl('\n',titre2)){
-    # si il y a des mots longs ou des espaces insécables, il peut être impossible de faire suffisamment de lignes
-    largeur_titre <- stringr::str_split(titre2, '\n') |>
-      unlist() |>
-      stringr::str_count('.') |>
-      max()
-    titre2 <- strwrap(titre, largeur_titre) |>
-      paste(collapse = '\n') # ajustement de la taille des lignes en fonction de la plus grande
-    nline <- stringr::str_count(titre2,'\n')+1
-
-    ratio_titre <- largeur_max /(taille_optimale*largeur_titre)
-
-    # taille mini entre le max qu'on peut mettre en largeur et le ce qui serra élégant en hauteur
-    taille_titre <- taille_optimale * min(1, ratio_titre, (0.5 + 0.6 * nline)/nline * 0.9)
-
-  }
-
-  titre2 <- gsub(.espace_insecable, ' ', titre2)
-
-  # place pour le titre en haut du graph. 1 = la hauteur d'un graph
-  hauteur_titre <- 2*(taille_titre / 105 * nline)/base_height + min(0.4, 0.01 * nrow)
-  # hauteur_titre <- taille_titre / 110 * nline + 0.1 + min(0.5, 0.01 * base_height * nrow)
-
-  # le titre est un graphique
-  graph_titre <- cowplot::ggdraw() + cowplot::draw_label(titre2, fontface='bold', size = taille_titre)
-
-  # si il y a une légende, elle est sur la même ligne que le titre
-  if(!is.null(.legende)){
-    graph_titre <- cowplot::plot_grid(graph_titre, .legende, ncol=2, rel_widths = c(largeur_max/105, .L_dim[1]))
-    hauteur_titre <- max(hauteur_titre, .L_dim[2]/base_height)
-  }
-
-  # ~~~~{    Assemblage de la ligne titre avec le corps du graph    }~~~~
-  grid_graph_2 <- cowplot::plot_grid(graph_titre, grid_graph_1, ncol=1, rel_heights = c(hauteur_titre, nrow)) # plus il y a de colones, plus le titre est gros
-
-  # ~~~~{    Enregistrement    }~~~~
-  cowplot::save_plot(fichier, grid_graph_2,
-                     ncol = 1, nrow = 1,
-                     base_height=(hauteur_titre + nrow)*base_height, #pour que la hauteur standard corresponde bien à un graph
-                     base_width = ncol*base_width,
-                     limitsize  = FALSE)
-}
-
 
 
 
@@ -579,88 +383,187 @@ rf_fig <- function(random_forest, titre = names(random_forest), fichier, .expl_v
 
 
 
-#' Carto : dans quel département
+
+### ________________________________________________________________________ ###
+#### FIGURES > Générales                                                    ####
+
+
+
+
+#' @noRd
+GeomBreak <- ggproto(
+  "GeomBreak", Geom,
+  required_aes = c("x", "y"),
+  default_aes  = aes(colour = "black", fill = "white", linewidth = 0.4, linetype = 1, alpha = NA),
+  draw_key     = draw_key_path,
+
+  # un break par groupe : on reçoit les points qui encadrent la coupure
+  draw_group =
+    function(data, panel_params, coord,
+             size = 0.04, gap = 0.015, angle = 60, aspect = 1) {
+
+      data <- coord$transform(data, panel_params)   # -> coordonnées npc (0-1)
+      data <- data[order(data$x), , drop = FALSE]
+      if (nrow(data) < 2) return(zeroGrob())
+
+      n  <- nrow(data)
+      p1 <- c(data$x[1] * aspect, data$y[1])
+      p2 <- c(data$x[n] * aspect, data$y[n])
+
+      d <- p2 - p1
+      d <- if (all(d == 0)) c(1, 0) else d / sqrt(sum(d^2))
+
+      a <- angle * pi / 180
+      s <- c(d[1] * cos(a) - d[2] * sin(a),         # direction des "slashs"
+             d[1] * sin(a) + d[2] * cos(a))
+
+      m  <- (p1 + p2) / 2
+      c1 <- m - d * gap / 2                          # centre du slash 1
+      c2 <- m + d * gap / 2                          # centre du slash 2
+      h  <- s * size / 2
+
+      a1 <- c1 - h; a2 <- c1 + h
+      b1 <- c2 - h; b2 <- c2 + h
+
+      X <- function(v) unit(v / aspect, "npc")
+      Y <- function(v) unit(v, "npc")
+
+      first <- data[1, ]
+      grobTree(
+        # rectangle blanc qui masque la courbe
+        polygonGrob(
+          x = X(c(a1[1], a2[1], b2[1], b1[1])),
+          y = Y(c(a1[2], a2[2], b2[2], b1[2])),
+          gp = gpar(fill = first$fill, col = NA)
+        ),
+        # les deux traits de la coupure
+        segmentsGrob(
+          x0 = X(c(a1[1], b1[1])), y0 = Y(c(a1[2], b1[2])),
+          x1 = X(c(a2[1], b2[1])), y1 = Y(c(a2[2], b2[2])),
+          gp = gpar(col = first$colour,
+                    lwd = first$linewidth * .pt,
+                    lty = first$linetype)
+        )
+      )
+    }
+)
+
+
+
+
+#' Cassure de courbe
 #'
-#' Identification du département à partir de coordonnées GPS.
+#' Dans un graphique ggplot, introduit une cassure sur une courbe pour indiquer une rupture de continuité.
 #'
-#' @param data Tableau de données.
-#' @param long Colonne de longitude.
-#' @param lat Colonne de lattitude.
+#' @param mapping idem ggplot2
+#' @param data idem ggplot2. usage conseillé : data = ~ filter(.x, coupure) avec coupure le champs indiquant (logical) les deux points entre lesquels s'insère la rupture de courbe
+#' @param stat idem ggplot2
+#' @param position idem ggplot2
+#' @param ... idem ggplot2
+#' @param size longueur des slashes
+#' @param gap espace entre les slashes
+#' @param angle angle des slashes par rapport à la courbe
+#' @param aspect ratio largeur/hauteur du panneau
+#' @param na.rm idem ggplot2
+#' @param show.legend idem ggplot2
+#' @param inherit.aes idem ggplot2
 #'
-#' @returns liste avec :
-#' * Le tableau `data` agrémenté d'une colonne `departement`.
-#' * Un tableau répertoriant les centroïdes des départements.
-#' @import dplyr
 #' @export
-quel_dep <- function(data, long = 'longitude', lat = 'latitude'){
-
-
-  if (!requireNamespace("sp", quietly = TRUE)) {
-    stop(
-      "Vous devez installer le package \"sp\" pour utiliser cette fonction.",
-      call. = FALSE
-    )
-  }
-
-  if (!requireNamespace("sf", quietly = TRUE)) {
-    stop(
-      "Vous devez installer le package \"sf\" pour utiliser cette fonction.",
-      call. = FALSE
-    )
-  }
-
-  if (!requireNamespace("maps", quietly = TRUE)) {
-    stop(
-      "Vous devez installer le package \"maps\" pour utiliser cette fonction.",
-      call. = FALSE
-    )
-  }
-
-  # ~~~~{    reférentiel    }~~~~
-
-  # fond de carte
-  france_map <- ggplot2::map_data('france')
-
-
-  # ~~~~{    Conversion en format sf    }~~~~
-
-  # référentiel
-  crs.lambert93 <- sp::CRS('+init=epsg:2154')
-
-
-  # conversion du fond de carte
-  list_ploygons <- list()
-  for(reg_i in unique(france_map$region)){
-    france_map_i <- filter(france_map, region == reg_i)
-    list_ploygons[[reg_i]] <- sp::Polygons(list(sp::Polygon(france_map_i[,c('long','lat')])), reg_i)
-  }
-
-  st_map <- sp::SpatialPolygons(list_ploygons, proj4string=crs.lambert93)
-
-  centroides <- sp::coordinates(st_map) |> data.frame()
-  names(centroides) <- c('lat','long')
-  centroides <- tibble::rownames_to_column(centroides, 'departement')
-
-  sf_map <- sf::st_as_sf(st_map)
-
-  # conversion des points
-  data <- as.data.frame(data)
-  data$x <- data[,long]
-  data$y <- data[,lat]
-
-  pnts_trans <- select(data, x, y) |>
-    sp::SpatialPoints(proj4string = crs.lambert93) |>
-    sf::st_as_sf()
-
-  # ~~~~{    intersection    }~~~~
-  data$departement <- apply(sf::st_intersects(sf_map, pnts_trans, sparse = FALSE), 2,
-                            function(col) {
-                              names(sf_map[col, ]$geometry)
-                            })
-
-  list(data = data, centroides = centroides)
-
+#'
+#' @examples
+#'
+#' test <- data.frame(X =c(1:10,1:10,1:10),
+#'                    Y = c(1:10, 10:1, rep(5,10)),
+#'                    gp = c(rep('A',10), rep('B',10), rep('C',10)))
+#' test$coupure <- ifelse(test$X %in% c(2,3), TRUE, FALSE)
+#'
+#'
+#' graph_test <- ggplot(test, aes(X, Y, color = gp)) +
+#'   geom_line()+
+#'   geom_break(data = ~ filter(.x, coupure), aspect = 2, size = 0.1)
+#'
+geom_break <- function(mapping = NULL, data = NULL,
+                       stat = "identity", position = "identity",
+                       ..., size = 0.04, gap = 0.015, angle = 60, aspect = 1,
+                       na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+  layer(
+    geom = GeomBreak, mapping = mapping, data = data,
+    stat = stat, position = position,
+    show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(size = size, gap = gap, angle = angle,
+                  aspect = aspect, na.rm = na.rm, ...)
+  )
 }
+
+
+
+
+### ________________________________________________________________________ ###
+#### FIGURES > Apparence, thèmes                                            ####
+
+
+#' Thème ggplot2 pour les graphiques
+#'
+#' Thème basé sur [ggplot2::theme_minimal()], avec légende en bas et
+#' sous-titre / légende de source en gris.
+#'
+#' @inheritParams ggplot2::theme_minimal
+#' @param ... Arguments supplémentaires passés à [ggplot2::theme_minimal()].
+#'
+#' @return Un objet de classe `theme` / `gg`.
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#' ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+#'   geom_point() +
+#'   labs(title = "Titre", subtitle = "Sous-titre", caption = "Source : mtcars") +
+#'   theme_basique()
+#'
+theme_basique <- function(base_size = 11, base_family = "", ...) {
+  ggplot2::theme_minimal(base_size = base_size, base_family = base_family, ...) +
+    ggplot2::theme(
+      legend.box.spacing = ggplot2::unit(0, "pt"),
+      legend.position = "bottom",
+      legend.box = "horizontal",
+      legend.key.spacing.y = ggplot2::unit(0, "pt"),
+      plot.title = ggplot2::element_text(hjust = 0, vjust = 1),
+      plot.subtitle = ggplot2::element_text(color = "#4D4D4DFF"),
+      plot.caption = ggplot2::element_text(size = 7, color = "#4D4D4DFF"),
+      plot.caption.position = "plot"
+    )
+}
+
+#' Thème ggplot2 pour les cartes du projet
+#'
+#' Thème basé sur [ggplot2::theme_void()], adapté aux cartes.
+#'
+#' @inheritParams ggplot2::theme_void
+#' @param ... Arguments supplémentaires passés à [ggplot2::theme_void()].
+#'
+#' @return Un objet de classe `theme` / `gg`.
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#' ggplot(mtcars, aes(wt, mpg, color = mpg)) +
+#'   geom_point() +
+#'   labs(title = "Titre", caption = "Source : mtcars") +
+#'   theme_carto()
+theme_carto <- function(base_size = 11, base_family = "", ...) {
+  ggplot2::theme_void(base_size = base_size, base_family = base_family, ...) +
+    ggplot2::theme(
+      plot.margin = ggplot2::unit(rep(4, 4), "pt"),
+      plot.title = ggplot2::element_text(hjust = 0, vjust = 1),
+      plot.subtitle = ggplot2::element_text(color = "#4D4D4DFF"),
+      plot.caption = ggplot2::element_text(size = 7, color = "#4D4D4DFF"),
+      plot.caption.position = "plot",
+      legend.key.height = ggplot2::unit(1, "null"),
+      legend.key.width = ggplot2::unit(0.3, "cm")
+    )
+}
+
+
 
 
 
@@ -732,7 +635,487 @@ mega_Palette <- function(N){
 
 
 
+### ________________________________________________________________________ ###
+#### FIGURES > Exportations                                                 ####
 
+#' Multitude de graphiques sur une page
+#'
+#' Arrange et exporte plusieurs graphique en grille sur une page.
+#'
+#' @param list_graph Liste des graphiques à intégrer à la figure.
+#' @param titre Titre de la figure.
+#' @param fichier Fichier de destination de la figure.
+#' @param ncol Nombre de colones de graphiques. Le nombre de ligne est déduit du nombre de graphiques à afficher.
+#' @param .base_dim Dimension x, y des graphiques de base. (en inches)
+#' @param .rel_widths Vecteur, largeur relative de chaque colonne.
+#'   Le nombre d'éléments doit être égale au nombre de colonnes.
+#' @param .rel_heights Vecteur, hauteur relative de chaque colonne.
+#'   Le nombre d'éléments doit être égale au nombre de lignes.
+#' @param .noms_lignes Vecteur. Label des lignes de graphique.
+#' @param .noms_col Vecteur. Label des colonnes de graphiques.
+#' @param .legende Graphique de égende, affiché sur la même ligne que le titre.
+#'   A utiliser lorsque la légende est la même pour tous les graphiques.
+#' @param .L_dim dimensions x, y de la légende (en inches).
+#' @param .label_position alignement des titres de ligne et colonne: 0 à gauche, 0.5 au centre et 1 à droite.
+#' @param .espace_insecable charactère utilisé comme espace insécable dans le titre.
+#'
+#' @section Erreurs connues:
+#' une erreur a été observée dans plot_grid() pour des graph tels que :
+#' `ggplot() +`
+#'  `geom_point(data = df, aes(x = df[,var1], y = var2))`
+#'
+#'  => Les points étaient mélangés d'un graph à l'autre.
+#'  Il faut privilégier `.data[[var]]` à `data.frame[[,var]]` ou `aes_string(var, 'RF_votes')`.
+#'
+#' @section Futurs évolutions:
+#' Les rel_heights et rel_widths agrandissent la taille de chaque graph.
+#' Il faudrait modifier les dims finales du graph car pour l'instant elle sont calculées pour tous les graphs à 1.
+#'
+#' @returns Graphique sauvegardé directement dans `fichier`.
+#' @import ggplot2
+#' @export
+fig_grid <- function(list_graph, titre, fichier, ncol,
+                     .base_dim = c(3, 2), .rel_widths = 1, .rel_heights = 1,
+                     .noms_lignes = NULL, .noms_col = NULL,
+                     .legende = NULL, .L_dim = c(2, 2),
+                     .label_position = 1, .espace_insecable = '_'){
+
+
+  if (!requireNamespace("cowplot", quietly = TRUE)) {
+    stop(
+      "Vous devez installer le package \"cowplot\" pour utiliser cette fonction.",
+      call. = FALSE
+    )
+  }
+
+
+  base_width  = .base_dim[1]
+  base_height = .base_dim[2]
+
+  nrow <- ceiling(length(list_graph)/ncol)
+  nrow_vrai <- nrow
+  ncol_vrai <- ncol
+
+  # ligne de titres de colonnes
+  position <- 0
+  if(!is.null(.noms_col)){
+    graphs_col <- list()
+    for(noms_col_i in .noms_col){
+      # print(position)
+      position <- position +1
+      graphs_col[[position]] <- cowplot::ggdraw() +
+        cowplot::draw_label(noms_col_i,
+                            fontface = 'bold',
+                            size = base_height * 105/stringr::str_count(noms_col_i))
+
+    }
+    list_graph <- append(graphs_col, list_graph)
+
+    if(length(.rel_heights) == 1){
+      .rel_heights <- c(0.2, rep(.rel_heights, nrow))
+    } else .rel_heights <- c(0.2, .rel_heights)
+
+    nrow_vrai <- nrow+1
+    if(!is.null(.noms_lignes)) .noms_lignes <- c('',.noms_lignes)
+
+  }
+
+  # colonne de titres de lignes
+  position <- 0
+  if(!is.null(.noms_lignes)){
+    for(noms_ligne_i in .noms_lignes){
+      # print(position)
+      graph_ligne <- cowplot::ggdraw() +
+        cowplot::draw_label(noms_ligne_i,
+                            fontface = 'bold',
+                            angle = 90,
+                            size = base_height * 105/stringr::str_count(noms_ligne_i))
+
+      list_graph <- append(list_graph,
+                           list(graph_ligne),
+                           position)
+
+      position <- position + ncol +1
+    }
+
+    if(length(.rel_widths) == 1){
+      .rel_widths <- c(0.2, rep(.rel_widths, ncol))
+    } else .rel_widths <- c(0.2, .rel_widths)
+
+    ncol_vrai <- ncol+1
+  }
+
+  # ~~~~{    ajout de 'marges' entre les lignes pour éviter les chevauchements    }~~~~
+  for(position in 2*(1:nrow_vrai-1)*ncol_vrai){
+    # graph_ligne <- ggdraw() + draw_label('test', fontface = 'bold', size= 10)
+
+    list_graph <- append(list_graph,
+                         # list(rep(ggdraw(), ncol)),
+
+                         rep(list(NULL), ncol_vrai),
+                         position)
+  }
+
+  rel_heights_ <- rep(0.05, 2*nrow_vrai)
+  rel_heights_[2*(1:nrow_vrai)] <- .rel_heights
+
+  # ~~~~{    position des titres    }~~~~
+  label_X     <- c(0.01,0.5,0.99)[1+.label_position*2]
+  label_hjust <- c('left',0,'right')[1+.label_position*2]
+
+  # ~~~~{    Corps du graphique    }~~~~
+  # assemblage des titres de lignes avec tous les graphs pour former le corps
+  grid_graph_1 <- cowplot::plot_grid(plotlist = list_graph,
+                                     ncol = ncol_vrai,
+                                     rel_widths = .rel_widths,
+                                     rel_heights = rel_heights_,
+                                     labels = names(list_graph),
+                                     label_size = 5*base_height,
+                                     label_x = label_X,
+                                     label_y = 1,
+                                     hjust = label_hjust,
+                                     vjust = 'bottom')
+
+  # ~~~~{    Mise en forme du titre    }~~~~
+  largeur_max <- (base_width * ncol - as.numeric(!is.null(.legende)) * .L_dim[1]) * 105
+  taille_optimale <- base_width * sqrt(ncol)* sqrt(nrow) * 6.3
+
+  titre2 <- titre
+  # si le titre est vraiment trop long par rapport à la place disponible et la taille optimale, on le coupe en plusieurs lignes
+  if(!grepl('\n',titre)){
+    largeur_titre <- stringr::str_count(titre,'.')
+
+    ratio_titre <- largeur_max /(taille_optimale*largeur_titre)
+
+    # supérieur à 0.7 - tout sur la même ligne
+    taille_titre <- taille_optimale * min(1, ratio_titre)
+
+    # inférieur à 0.7 - on coupe en plusieurs lignes
+    if(ratio_titre < 0.6)
+      titre2 <- strwrap(titre, round(largeur_max/(0.6*taille_optimale))) |>
+      paste(collapse = '\n')
+
+  }
+
+  nline <- stringr::str_count(titre2,'\n')+1
+
+  if(grepl('\n',titre2)){
+    # si il y a des mots longs ou des espaces insécables, il peut être impossible de faire suffisamment de lignes
+    largeur_titre <- stringr::str_split(titre2, '\n') |>
+      unlist() |>
+      stringr::str_count('.') |>
+      max()
+    titre2 <- strwrap(titre, largeur_titre) |>
+      paste(collapse = '\n') # ajustement de la taille des lignes en fonction de la plus grande
+    nline <- stringr::str_count(titre2,'\n')+1
+
+    ratio_titre <- largeur_max /(taille_optimale*largeur_titre)
+
+    # taille mini entre le max qu'on peut mettre en largeur et le ce qui serra élégant en hauteur
+    taille_titre <- taille_optimale * min(1, ratio_titre, (0.5 + 0.6 * nline)/nline * 0.9)
+
+  }
+
+  titre2 <- gsub(.espace_insecable, ' ', titre2)
+
+  # place pour le titre en haut du graph. 1 = la hauteur d'un graph
+  hauteur_titre <- 2*(taille_titre / 105 * nline)/base_height + min(0.4, 0.01 * nrow)
+  # hauteur_titre <- taille_titre / 110 * nline + 0.1 + min(0.5, 0.01 * base_height * nrow)
+
+  # le titre est un graphique
+  graph_titre <- cowplot::ggdraw() + cowplot::draw_label(titre2, fontface='bold', size = taille_titre)
+
+  # si il y a une légende, elle est sur la même ligne que le titre
+  if(!is.null(.legende)){
+    graph_titre <- cowplot::plot_grid(graph_titre, .legende, ncol=2, rel_widths = c(largeur_max/105, .L_dim[1]))
+    hauteur_titre <- max(hauteur_titre, .L_dim[2]/base_height)
+  }
+
+  # ~~~~{    Assemblage de la ligne titre avec le corps du graph    }~~~~
+  grid_graph_2 <- cowplot::plot_grid(graph_titre, grid_graph_1, ncol=1, rel_heights = c(hauteur_titre, nrow)) # plus il y a de colones, plus le titre est gros
+
+  # ~~~~{    Enregistrement    }~~~~
+  cowplot::save_plot(fichier, grid_graph_2,
+                     ncol = 1, nrow = 1,
+                     base_height=(hauteur_titre + nrow)*base_height, #pour que la hauteur standard corresponde bien à un graph
+                     base_width = ncol*base_width,
+                     limitsize  = FALSE)
+}
+
+
+
+#' Sauvegarde une figure en png et/ou svg
+#'
+#' @param graph figure
+#' @param fichier emplacement ou enregistrer la figure
+#'    .png ou .svg à la fin pour limiter l'enregistrement à un seul format
+#' @param width largeur en inches
+#' @param height hauteur en inches
+#' @param .res résolution pour le png, en ppi
+#' @param .silence Désactive le témoin d'activation "."
+#'
+#' @export
+#'
+sauv_graph <- function(graph, fichier, width, height, .res = 200, .silence = FALSE){
+
+  go_png <- !stringr::str_detect(fichier, 'svg$')
+  go_svg <- !stringr::str_detect(fichier, 'png$')
+
+  if(go_png){
+    fichier |>
+      paste0('.png') |>
+      stringr::str_remove('(?<=\\.png)\\.png') |>
+      png(width, height, units='in', res = .res)
+
+    suppressMessages(print(graph))
+
+    dev.off()
+  }
+
+  if(go_svg){
+    fichier |>
+      paste0('.svg') |>
+      stringr::str_remove('(?<=\\.svg)\\.svg') |>
+      svg(width, height)
+
+    suppressMessages(print(graph))
+
+    dev.off()
+  }
+
+  if(!.silence) cat('.')
+}
+
+
+
+#' Ajoute une image d'arrière-plan non déformée a un ggplot, sous le quadrillage
+#'
+#' @param plot       objet ggplot
+#' @param image_path chemin vers l'image (png, jpg, etc.)
+#' @param width,height dimensions EXACTES d'export prévues, en pouces
+#'                      (doivent correspondre a celles utilisées dans png())
+#' @param height_frac fraction de la hauteur du panel que l'image doit occuper
+#'                    (0.5 = 50%). La largeur est déduite automatiquement du
+#'                    ratio natif de l'image : jamais de déformation.
+#' @param x, y       position du centre de l'image en npc du panel (0.5,0.5 = centre)
+#' @param bg_fill    couleur du fond place derrière l'image (défaut "white")
+#'
+#' @return le ggplot avec l'image comme panel.background (donc sous panel.grid)
+#'
+#' @importFrom ggplot2 ggplotGrob
+#' @import grid
+#'
+#' @export
+add_background_image <- function(plot, image_path, width, height,
+                                 height_frac = 0.5,
+                                 x = 0.5, y = 0.5,
+                                 bg_fill = "white") {
+
+  img  <- magick::image_read(image_path)
+  info <- magick::image_info(img)
+  img_ratio <- info$height / info$width   # ratio natif hauteur/largeur
+
+  # ~~~~{    1. Mesurer le panel reel pour CE plot, a SA taille d'export    }~~~~
+  # On dessine le plot dans un device png temporaire de la bonne taille pour
+  # que les marges/legende/caption soient calculées avec les mêmes métriques
+  # que lors de l'export final.
+  tmp <- tempfile(fileext = ".png")
+  png(tmp, width = width, height = height, units = "in", res = 96)
+  g <- ggplotGrob(plot)
+  dev.off()
+  unlink(tmp)
+
+  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
+  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
+  # qu'on peut convertir en pouces directement.
+  is_null_w <- unitType(g$widths)  == "null"
+  is_null_h <- unitType(g$heights) == "null"
+
+  fixed_w_in <- sum(convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
+  fixed_h_in <- sum(convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
+
+  panel_w_in <- width  - fixed_w_in
+  panel_h_in <- height - fixed_h_in
+
+  if (panel_w_in <= 0 || panel_h_in <= 0) {
+    stop("Panel de taille nulle ou negative : augmentez width/height ",
+         "(la legende/caption prennent plus de place que le graphique).")
+  }
+
+
+  # ~~~~{    2. Dimensionner l'image sans la deformer    }~~~~
+  h_npc <- height_frac
+  h_in  <- panel_h_in * h_npc
+  w_in  <- h_in / img_ratio
+  w_npc <- w_in / panel_w_in
+
+  if (w_npc > 1) {
+    warning("A height_frac = ", height_frac, ", l'image deborderait du panel ",
+            "en largeur (w_npc = ", round(w_npc, 2), "). Reduction automatique ",
+            "pour qu'elle tienne en largeur.")
+    w_npc <- 1
+    h_npc <- w_npc * img_ratio * (panel_w_in / panel_h_in)
+  }
+
+  # ~~~~{    3. Construire le grob et l'ajouter en fond    }~~~~
+  # rectGrob blanc en dessous (remplit tout le panel) + image par-dessus,
+  # le tout regroupe dans un seul grob utilise comme panel.background.
+  bg_rect <- rectGrob(gp = gpar(fill = bg_fill, col = NA))
+
+  bg_raster <- rasterGrob(
+    img,
+    x = unit(x, "npc"), y = unit(y, "npc"),
+    width  = unit(w_npc, "npc"),
+    height = unit(h_npc, "npc")
+  )
+
+  bg_grob <- grobTree(bg_rect, bg_raster)
+
+  # Place le grob au niveau du panel.background -> dessine AVANT panel.grid,
+  # donc l'image (et son fond blanc) apparaissent SOUS le quadrillage.
+  plot + theme(panel.background = element_custom_bg(bg_grob))
+}
+
+#' Sauvegarde un ggplot avec image de fond (png uniquement)
+#'
+#' @param plot        objet ggplot (sans l'image de fond -- elle est ajoutee ici)
+#' @param filename    chemin de sortie, ex. "plot1.png"
+#' @param image_path  chemin de l'image de fond
+#' @param width,height dimensions d'export en pouces
+#' @param height_frac fraction de la hauteur du panel occupee par l'image
+#' @param res         resolution (dpi)
+#'
+#' @export
+#'
+#' @examples
+#'
+#' p1 <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
+#' p2 <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+#'       geom_point() +
+#'       labs(caption = "Source : mtcars")
+#' url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
+#'
+#' save_plot_bg(p1, "plot1.png", url_img, width = 6,  height = 4)
+#' save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7)
+#'
+#' # Chaque appel recalcule la taille reelle du panel pour CE plot (avec ou sans
+#' # legende/caption) et redimensionne l'image en consequence : jamais de
+#' # deformation, image sous le quadrillage, et toujours ~50% de la hauteur du
+#' # panel (parametrable via height_frac).
+#'
+save_plot_bg <- function(plot, filename, image_path, width, height,
+                         height_frac = 0.5, res = 300, ...) {
+  p2 <- add_background_image(plot, image_path, width, height,
+                             height_frac = height_frac, ...)
+
+  png(filename, width = width, height = height, units = "in", res = res)
+  print(p2)
+  dev.off()
+
+  invisible(p2)
+}
+
+
+### ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ ###
+#                                                                              #
+####  >> SIG                                                                ####
+#                                                                              #
+### ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ ###
+
+### ________________________________________________________________________ ###
+#### SIG > Exportation                                                      ####
+
+#' Marge fixe d'un ggplot
+#'
+#' @param plot le graphique ggplot2 à analyser
+#'
+#' @returns  liste de longueur 2 : marge_X, marge_Y
+#' @export
+#'
+#' @examples
+#' p <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+#'       geom_point() +
+#'       labs(caption = "Source : mtcars")
+#'
+#' quelles_marges(p)
+#'
+quelles_marges  <- function(plot) {
+  pdf(NULL, width = 10, height = 10)
+  g <- ggplotGrob(plot)
+  dev.off()
+
+  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
+  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
+  # qu'on peut convertir en pouces directement.
+  is_null_w <- grid::unitType(g$widths)  == "null"
+  is_null_h <- grid::unitType(g$heights) == "null"
+
+  fixed_w_in <- sum(grid::convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
+  fixed_h_in <- sum(grid::convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
+
+  list(marge_X = fixed_w_in, marge_Y = fixed_h_in)
+}
+
+
+
+#' dim d'export depuis ratio
+#'
+#' Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée.
+#' utile pour automatiser un export de carte dont l'aspect ratio peut varier.
+#'
+#' @param ratio ratio X/Y souhaité pour la zone de graphique
+#' @param aire Aire souhaitée pour l'export
+#' @param marge_X largeur fixe du graphique, non impactée par la modification du ratio
+#' @param marge_Y hauteur  fixe du graphique, non impactée par la modification du ratio
+#'
+#' @returns liste de longueur 2 : X (largeur) et Y (hauteur)
+#' @export
+#'
+#' @examples
+#'
+#' # utilisation simple : dimention avec un ratio et une aire donnée
+#' dim_aire(ratio = 4/3, aire = 30)
+#'
+#' # utilisation en contexte SIG, ratio fixé par les données :
+#' # couche de base de la carte - département de La Réunion
+#' sf_region <- sf::st_read(paste0(system.file('extdata', package = 'pack.figures'),'/admin_reunion.gpkg'), layer = 'region', quiet = TRUE)
+#' emprise <- sf::st_bbox(sf_region) # emprise de la couche
+#' ratio_p <- unname(diff(emprise[c(1,3)])/diff(emprise[c(2,4)])) # ratio de la couche
+#'
+#' p <- ggplot2::ggplot() +
+#' ggplot2::geom_sf(data = sf_region) +
+#' ggplot2::labs(title = "La Réunion",
+#'      caption = "source : IGN")
+#'
+#' marges <- quelles_marges(p)
+#'
+#' # dimensions adaptés à la carte pour une aire totale de 30 in²
+#' dim_aire(ratio = ratio_p, aire = 30,
+#'          marge_X = marges$marge_X, marge_Y = marges$marge_Y)
+#'
+dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
+  # résolution de l'équation (x + marge_x) * (x/ratio + marge_y) = aire
+  # <=> (x² + x * marge_x)/ratio + x * marge_y + marge_x * marge_y - aire = 0
+  # -> polygone du second degré ... ^^'
+
+  a <- 1/ratio
+  b <- marge_X + marge_Y + marge_X/ratio
+  c <- marge_X * marge_Y - aire
+
+  # résolution de l'équation 1/ratio *X² + marge_Y*X -aire
+  X1 <- (-b - sqrt(b^2 - 4 * a * c))/(2 * a)
+  X2 <- (-b + sqrt(b^2 - 4 * a * c))/(2 * a)
+
+  X <- max(X1, X2) # on ne garde que la solution positive
+
+  list(X = X, Y = X/ratio + marge_Y)
+}
+
+
+
+
+### ________________________________________________________________________ ###
+#### SIG > avec Leaflet                                                     ####
 
 #' Liste de marqueurs colorés pour Leaflet
 #'
@@ -800,379 +1183,239 @@ leaf_colored_markers <- function(palette){
 
 
 
+### ________________________________________________________________________ ###
+#### SIG > carte complète                                                   ####
 
-
-
-
-
-
-
-
-#' Sauvegarde une figure en png et/ou svg
+#' Représenter une variable à l'échelle des communes de La Réunion
 #'
-#' @param graph figure
-#' @param fichier emplacement ou enregistrer la figure
-#'    .png ou .svg à la fin pour limiter l'enregistrement à un seul format
-#' @param width largeur en inches
-#' @param height hauteur en inches
-#' @param .res résolution pour le png, en ppi
-#' @param .silence Désactive le témoin d'activation "."
+#' Fonction généraliste qui produit une carte choroplèthe (ggplot2) d'une
+#' variable quantitative à l'échelle communale. Seules les communes présentes
+#' dans `data` sont colorées ; la carte est cadrée sur leur emprise, avec un
+#' fond de communes en filigrane et un masque blanc pour les zones hors
+#' région. Un ombrage du relief (raster) peut être ajouté en arrière-plan.
 #'
-#' @export
+#' La fonction renvoie également les dimensions suggérées pour l'export de
+#' la carte, calculées à partir du rapport largeur/hauteur de l'emprise.
 #'
-sauv_graph <- function(graph, fichier, width, height, .res = 200, .silence = FALSE){
-
-  go_png <- !stringr::str_detect(fichier, 'svg$')
-  go_svg <- !stringr::str_detect(fichier, 'png$')
-
-  if(go_png){
-    fichier |>
-      paste0('.png') |>
-      stringr::str_remove('(?<=\\.png)\\.png') |>
-      png(width, height, units='in', res = .res)
-
-    suppressMessages(print(graph))
-
-    dev.off()
-  }
-
-  if(go_svg){
-    fichier |>
-      paste0('.svg') |>
-      stringr::str_remove('(?<=\\.svg)\\.svg') |>
-      svg(width, height)
-
-    suppressMessages(print(graph))
-
-    dev.off()
-  }
-
-  if(!.silence) cat('.')
-}
-
-
-
-
-
-
-
-#' Ajoute une image d'arriere-plan non deformee a un ggplot, sous le quadrillage
+#' @param data Un `data.frame` (ou `tibble`) contenant les valeurs à
+#'   cartographier, avec une ligne par commune et une colonne portant le code
+#'   INSEE de la commune.
+#' @param col.fill Chaîne de caractères : nom de la colonne de `data` dont les
+#'   valeurs sont représentées par la couleur de remplissage des communes
+#'   (échelle `viridis` continue). La colonne doit être numérique.
+#' @param .code_insee Chaîne de caractères : nom de la colonne de `data`
+#'   contenant le code INSEE des communes. Par défaut (`NULL`), la première
+#'   colonne dont le nom contient « INSEE » (insensible à la casse) est
+#'   utilisée.
+#' @param .ombrage Booléen. Si `TRUE` (par défaut), l'ombrage du relief est
+#'   affiché en arrière-plan et les communes sont rendues légèrement
+#'   transparentes. L'ombrage n'est affiché que si le fichier raster est
+#'   accessible ; sinon la carte est produite sans.
+#' @param .label Booléen. Si `TRUE`, la valeur de `col.fill` est inscrite au
+#'   centre de chaque commune, en noir ou en blanc selon le contraste avec la
+#'   couleur de remplissage. Par défaut `FALSE`.
+#' @param .zoom la carte zoom elle sur les communes contenant des données ou
+#'   garde elle l'ensemble de la réunion. Par défaut `FALSE`.
 #'
-#' @param plot       objet ggplot
-#' @param image_path chemin vers l'image (png, jpg, etc.)
-#' @param width,height dimensions EXACTES d'export prevues, en pouces
-#'                      (doivent correspondre a celles utilisees dans png())
-#' @param height_frac fraction de la hauteur du panel que l'image doit occuper
-#'                    (0.5 = 50%). La largeur est deduite automatiquement du
-#'                    ratio natif de l'image : jamais de deformation.
-#' @param x, y       position du centre de l'image en npc du panel (0.5,0.5 = centre)
-#' @param bg_fill    couleur du fond place derriere l'image (defaut "white")
+#' @return Une liste de trois éléments :
+#' \describe{
+#'   \item{1}{Un objet `ggplot` : la carte.}
+#'   \item{2}{Un nombre : la largeur suggérée pour l'export (en pouces).}
+#'   \item{3}{Un nombre : la hauteur suggérée pour l'export (en pouces).}
+#' }
 #'
-#' @return le ggplot avec l'image comme panel.background (donc sous panel.grid)
-#'
-#' @importFrom ggplot2 ggplotGrob
-#' @import grid
-#'
-#' @export
-add_background_image <- function(plot, image_path, width, height,
-                                 height_frac = 0.5,
-                                 x = 0.5, y = 0.5,
-                                 bg_fill = "white") {
-
-  img  <- magick::image_read(image_path)
-  info <- magick::image_info(img)
-  img_ratio <- info$height / info$width   # ratio natif hauteur/largeur
-
-  # --- 1. Mesurer le panel reel pour CE plot, a SA taille d'export -----------
-  # On dessine le plot dans un device png temporaire de la bonne taille pour
-  # que les marges/legende/caption soient calculees avec les memes metriques
-  # que lors de l'export final.
-  tmp <- tempfile(fileext = ".png")
-  png(tmp, width = width, height = height, units = "in", res = 96)
-  g <- ggplotGrob(plot)
-  dev.off()
-  unlink(tmp)
-
-  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
-  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
-  # qu'on peut convertir en pouces directement.
-  is_null_w <- unitType(g$widths)  == "null"
-  is_null_h <- unitType(g$heights) == "null"
-
-  fixed_w_in <- sum(convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
-  fixed_h_in <- sum(convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
-
-  panel_w_in <- width  - fixed_w_in
-  panel_h_in <- height - fixed_h_in
-
-  if (panel_w_in <= 0 || panel_h_in <= 0) {
-    stop("Panel de taille nulle ou negative : augmentez width/height ",
-         "(la legende/caption prennent plus de place que le graphique).")
-  }
-
-  # --- 2. Dimensionner l'image sans la deformer -------------------------------
-  h_npc <- height_frac
-  h_in  <- panel_h_in * h_npc
-  w_in  <- h_in / img_ratio
-  w_npc <- w_in / panel_w_in
-
-  if (w_npc > 1) {
-    warning("A height_frac = ", height_frac, ", l'image deborderait du panel ",
-            "en largeur (w_npc = ", round(w_npc, 2), "). Reduction automatique ",
-            "pour qu'elle tienne en largeur.")
-    w_npc <- 1
-    h_npc <- w_npc * img_ratio * (panel_w_in / panel_h_in)
-  }
-
-  # --- 3. Construire le grob et l'ajouter en fond -----------------------------
-  # rectGrob blanc en dessous (remplit tout le panel) + image par-dessus,
-  # le tout regroupe dans un seul grob utilise comme panel.background.
-  bg_rect <- rectGrob(gp = gpar(fill = bg_fill, col = NA))
-
-  bg_raster <- rasterGrob(
-    img,
-    x = unit(x, "npc"), y = unit(y, "npc"),
-    width  = unit(w_npc, "npc"),
-    height = unit(h_npc, "npc")
-  )
-
-  bg_grob <- grobTree(bg_rect, bg_raster)
-
-  # Place le grob au niveau du panel.background -> dessine AVANT panel.grid,
-  # donc l'image (et son fond blanc) apparaissent SOUS le quadrillage.
-  plot + theme(panel.background = element_custom_bg(bg_grob))
-}
-
-#' Sauvegarde un ggplot avec image de fond (png uniquement)
-#'
-#' @param plot        objet ggplot (sans l'image de fond -- elle est ajoutee ici)
-#' @param filename    chemin de sortie, ex. "plot1.png"
-#' @param image_path  chemin de l'image de fond
-#' @param width,height dimensions d'export en pouces
-#' @param height_frac fraction de la hauteur du panel occupee par l'image
-#' @param res         resolution (dpi)
-#'
-#' @export
+#' @details
+#' La fonction s'appuie sur des objets externes qui doivent être disponibles
+#' dans l'environnement : `sf_communes` (géométries communales, avec une
+#' colonne `code_insee`), `sf_region` (contour de la région) et `theme_carto`
+#' (thème ggplot2). Le raster d'ombrage est lu depuis un chemin réseau et
+#' son CRS est fixé à `EPSG:2975` (RGR92 / UTM 40S).
 #'
 #' @examples
+#' \dontrun{
+#' df <- data.frame(
+#'   code_insee = c("97411", "97415", "97416"),
+#'   taux = c(12.5, 8.3, 15.1)
+#' )
 #'
-#' p1 <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
-#' p2 <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
-#'       geom_point() +
-#'       labs(caption = "Source : mtcars")
-#' url_img <- "http://mathworld.wolfram.com/images/gifs/rabbduck.jpg"
+#' # Carte simple
+#' res <- carto_974(df, col.fill = "taux")
+#' res[[1]]
 #'
-#' save_plot_bg(p1, "plot1.png", url_img, width = 6,  height = 4)
-#' save_plot_bg(p2, "plot2.png", url_img, width = 10, height = 7)
+#' # Sans ombrage, avec étiquettes, et export
+#' res <- carto_974(df, col.fill = "taux", .ombrage = FALSE, .label = TRUE)
+#' ggplot2::ggsave("carte.png", res[[1]], width = res[[2]], height = res[[3]])
+#' }
 #'
-#' # Chaque appel recalcule la taille reelle du panel pour CE plot (avec ou sans
-#' # legende/caption) et redimensionne l'image en consequence : jamais de
-#' # deformation, image sous le quadrillage, et toujours ~50% de la hauteur du
-#' # panel (parametrable via height_frac).
-#'
-save_plot_bg <- function(plot, filename, image_path, width, height,
-                         height_frac = 0.5, res = 300, ...) {
-  p2 <- add_background_image(plot, image_path, width, height,
-                             height_frac = height_frac, ...)
-
-  png(filename, width = width, height = height, units = "in", res = res)
-  print(p2)
-  dev.off()
-
-  invisible(p2)
-}
-
-
-#' dim d'export depuis ratio
-#'
-#' Donne les dimensions optimales d'export d'un graphique pour un ratio et une aire donnée
-#'
-#' @param ratio ratio X/Y souhaité pour la zone de graphique
-#' @param aire Aire souhaitée pour l'export
-#' @param marge_X largeur fixe du graphique, non impactée par la modification du ratio
-#' @param marge_Y hauteur  fixe du graphique, non impactée par la modification du ratio
-#'
-#' @returns liste de longueur 2 : X (largeur) et Y (hauteur)
+#' @import ggplot2
+#' @importFrom sf st_read st_bbox st_as_sfc st_buffer st_boundary st_difference st_union st_drop_geometry
+#' @importFrom dplyr inner_join join_by first
+#' @importFrom stringr str_detect str_to_upper
 #' @export
-dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
-  # résolution de l'équation (x + marge_x) * (x/ratio + marge_y) = aire
-  # <=> (x² + x * marge_x)/ratio + x * marge_y + marge_x * marge_y - aire = 0
-  # -> polygone du second degré ... ^^'
+carto_974 <- function(data, col.fill, .code_insee = NULL, .ombrage = TRUE, .label = FALSE, .zoom = FALSE){
 
-  a <- 1/ratio
-  b <- marge_X + marge_Y + marge_X/ratio
-  c <- marge_X * marge_Y - aire
+  # lecture des bordures administratives
+  dir_admin <- paste0(system.file('extdata', package = 'pack.figures'),'/admin_reunion.gpkg')
+  sf_region <- st_read(dir_admin, layer = 'region', quiet = T)
+  sf_communes <- st_read(dir_admin, layer = 'commune', quiet = T)
 
-  # résolution de l'équation 1/ratio *X² + marge_Y*X -aire
-  X1 <- (-b - sqrt(b^2 - 4 * a * c))/(2 * a)
-  X2 <- (-b + sqrt(b^2 - 4 * a * c))/(2 * a)
-
-  X <- max(X1, X2) # on ne garde que la solution positive
-
-  list(X = X, Y = X/ratio + marge_Y)
-}
-
-#' Marge fixe d'un ggplot
-#'
-#' @param plot le graphique ggplot2 à analyser
-#'
-#' @returns  liste de longueur 2 : marge_X, marge_Y
-#' @export
-#'
-#' @examples
-#' p <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
-#'       geom_point() +
-#'       labs(caption = "Source : mtcars")
-#'
-#' quelles_marges(p)
-#'
-quelles_marges  <- function(plot) {
-  pdf(NULL, width = 10, height = 10)
-  g <- ggplotGrob(plot)
-  dev.off()
-
-  # Colonnes/lignes "null" = le(s) panel(s) ; tout le reste (legende, axes,
-  # titres, caption, marges) est en unites fixes (pt, lines, grobwidth...)
-  # qu'on peut convertir en pouces directement.
-  is_null_w <- grid::unitType(g$widths)  == "null"
-  is_null_h <- grid::unitType(g$heights) == "null"
-
-  fixed_w_in <- sum(grid::convertWidth(g$widths[!is_null_w],  "in", valueOnly = TRUE))
-  fixed_h_in <- sum(grid::convertHeight(g$heights[!is_null_h], "in", valueOnly = TRUE))
-
-  list(marge_X = fixed_w_in, marge_Y = fixed_h_in)
-}
-
-
-
-
-
-#' Cassure de courbe
-#'
-#' Dans un graphique ggplot, introduit une cassure sur une courbe pour indiquer une rupture de continuité.
-#' Prise en compte de l'inclinaison de la coube et prise en compte de la taille rendu pour que l'inclunaison de la forme reste cohérente.
-#'
-#' @param graph graphique
-#' @param data données contenant la courbe pour laquelle on veut intreoduire une rupture
-#' @param X, Y les noms des colonnes. En characteres.
-#' @param groupe pour générer plusieurs breaks sur des lignes différentes
-#' @param filtre les points entre lesquels mettre des breaks
-#' @param tronc_X,tronc_Y est ce que l'axe est tronqué ?
-#' @param range_X,range_Y l'amplitude des données, si elle ne dépend pas uniquement des données fournies
-#' @param ratio_X_Y ratio X/Y si la zone de graphique n'est pas carrée
-#' @param linewidth largeur de ligne de la forme
-#' @param color couleur de la forme
-#' @param size taille de la forme
-#'
-#' @returns grphique ggplot
-#' @export
-#'
-#' @examples
-#'
-#' test <- data.frame(X =c(1:10,1:10,1:10),
-#'                    Y = c(1:10, 10:1, rep(5,10)),
-#'                    tronc_X = TRUE, tronc_Y = TRUE,
-#'                    gp = c(rep('A',10), rep('B',10), rep('C',10)))
-#' test$bk <- ifelse(test$X %in% c(2,3), TRUE, FALSE)
-#'
-#'
-#' graph_test <- ggplot(test, aes(X, Y, color = gp)) +
-#'   geom_line()
-#'
-#' geom_break(graph = graph_test,
-#'            data = test,
-#'            X='X', Y='Y',  # les noms des colonnes
-#'            groupe = 'gp', # pour générer plusieurs breaks sur des lignes différentes
-#'            filtre = 'bk', # les points entre lesquels mettre des breaks
-#'
-#'            ratio_X_Y = 1.5, size = 2) # apparence de la forme
-#'
-geom_break <- function(graph,
-                       data,
-                       X, Y,
-                       groupe,
-                       filtre,
-                       tronc_X = T, tronc_Y = F,
-                       range_Y = NULL,
-                       range_X = NULL,
-                       ratio_X_Y = 1,
-                       linewidth = 0.4, color = NULL, size = 1){
-
-
-  df_breaks0 <- data %>%
-    filter(!is.na(.data[[groupe]])) %>%
-    group_by(.data[[groupe]])
-
-  # amplitude des données
-  if(is.null(range_X))
-    range_X <- max(df_breaks0[,X]) - if(tronc_X){min(df_breaks0[,X])} else 0
-
-  if(is.null(range_Y))
-    range_Y <- max(df_breaks0[,Y]) - if(tronc_Y){min(df_breaks0[[Y]])} else 0
-
-  # ajustement à la taille de la zone
-  range_X <- range_X/ratio_X_Y
-
-  # ajustement de la taille de la forme désirée
-  range_X <- range_X * size
-  range_Y <- range_Y * size
-
-  # uniquement les points entre lesquels se trouvent les breaks
-  df_breaks0 <- df_breaks0 %>%
-    filter(.data[[filtre]]) %>%
-    arrange(.data[[X]]) %>%
-    as.data.frame()
-
-  # calculs des extrémités des formes des breaks
-  df_breaks <- data.frame()
-
-  gpe_i=data[25,groupe]
-  for(gpe_i in unique(df_breaks0[,groupe])){ # courbe par courbe
-    df_i <- df_breaks0 %>%
-      filter(.data[[groupe]] == gpe_i) %>%
-      as.data.frame()
-
-    points <- fct_breakpoints(x1 = first(df_i[,X]),
-                              y1 = first(df_i[,Y]),
-                              x2 = last(df_i[,X]),
-                              y2 = last(df_i[,Y]),
-                              range_X, range_Y)
-    points[,groupe] <- gpe_i
-
-    df_breaks <- bind_rows(df_breaks, points)
+  # lecture du raster ombrage si nécessaire
+  if(.ombrage & !exists('r_ombrage') & file.exists("M:/D_PPP_U/Amaury JORANT/.Base SIG/Environnement/MNT/LISSAGE/ombrage_simplifié.tif")){
+    r_ombrage <- terra::rast("M:/D_PPP_U/Amaury JORANT/.Base SIG/Environnement/MNT/LISSAGE/ombrage_simplifié.tif")
+    terra::crs(r_ombrage) <- "EPSG:2975"
   }
 
-  if(nrow(df_breaks)){
+  #detection automatique de la colonne avec les codes insee
+  if(is.null(.code_insee))
+    .code_insee <- names(data)[first(which(str_detect(str_to_upper(names(data)), 'INSEE')))]
 
-    df_breaks_rect <- bind_rows(
-      select(df_breaks, all_of(groupe), XX = x1, YY = y1) %>% arrange(XX),
-      select(df_breaks, all_of(groupe), XX = x2, YY = y2) %>% arrange(-XX)
+  data$code_insee <- as.character(data[,.code_insee])
+
+  # jointure avec les géometries des communes. On ne garde que celles qui sont présentes dans les données
+  sf_com_i <- sf_communes %>%
+    inner_join(data, by = join_by(code_insee))
+
+  # emprise des communes conservées
+  emprise <- if(.zoom) st_bbox(sf_com_i) else st_bbox(sf_communes)
+  emprise_large <- emprise |>
+    st_as_sfc() |>
+    st_buffer(dist = 5000,
+              joinStyle = "MITRE",
+              mitreLimit = 10)
+
+
+  # ~~~~{    Taille pour l'exportation    }~~~~ #
+  width <- diff(emprise[c(1,3)])
+  height <- diff(emprise[c(2,4)])
+
+  ratio <- width/height
+  width <- 5 * ratio +0.5
+  height <- 5 / ratio +1
+
+  # ~~~~{    Carte    }~~~~ #
+  g_i <- ggplot()
+
+  if(.ombrage & exists('r_ombrage'))
+    g_i <- ggplot() +
+    tidyterra::geom_spatraster(data = r_ombrage, aes(alpha = hillshade), fill = 'black')
+
+  g_i <- g_i +
+    scale_alpha_continuous(range = c(1, 0), guide = 'none') +
+    geom_sf(data = st_boundary(sf_communes),
+            linewidth = 0.03) +
+    geom_sf(data = st_difference(emprise_large, st_union(sf_region)),
+            color = 'white',
+            fill = 'white') +
+    geom_sf(data = sf_com_i,
+            aes(fill = .data[[col.fill]]),
+            color = 'white',
+            lwd  = 0.05,
+            alpha = ifelse(.ombrage, 0.7, 1)
+    ) +
+
+    scale_fill_viridis_c(name = NULL) +
+    coord_sf(xlim = emprise[c(1,3)], ylim = emprise[c(2,4)]) +
+    theme_carto()
+
+  if(.label){
+    limite_noir_blanc <- sum(c(0.25,0.75)*range(st_drop_geometry(sf_com_i[,col.fill]), na.rm = TRUE))
+
+    g_i <- g_i +
+      geom_sf_text(data = sf_com_i,
+                   aes(label = .data[[col.fill]],
+                       color = .data[[col.fill]] > limite_noir_blanc)) +
+      scale_color_manual(values = c('TRUE' = 'black', 'FALSE' = 'white'), guide = NULL)
+  }
+
+  #export de la carte et des dimensions idéales d'exportation
+  list(g_i, width, height)
+}
+
+
+### ________________________________________________________________________ ###
+#### SIG > recherche informations                                           ####
+
+#' Carto : dans quel département
+#'
+#' Identification du département à partir de coordonnées GPS.
+#'
+#' @param data Tableau de données.
+#' @param long Colonne de longitude.
+#' @param lat Colonne de latitude.
+#'
+#' @returns liste avec :
+#' * Le tableau `data` agrémenté d'une colonne `departement`.
+#' * Un tableau répertoriant les centroïdes des départements.
+#' @import dplyr
+#' @export
+quel_dep <- function(data, long = 'longitude', lat = 'latitude'){
+
+
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    stop(
+      "Vous devez installer le package \"sp\" pour utiliser cette fonction.",
+      call. = FALSE
     )
-
-    graph <- graph +
-      geom_polygon(data= df_breaks_rect,
-                   aes(x = XX, y = YY, group = .data[[groupe]]),
-                   fill = 'white',
-                   color= 'white')
-
-    if(is.null(color)){
-      graph <- graph +
-        geom_segment(data = df_breaks,
-                     aes(x = x1, xend = x2,
-                         y = y1, yend = y2),
-                     linewidth = linewidth)
-    } else{
-      graph <- graph +
-        geom_segment(data = df_breaks,
-                     aes(x = x1, xend = x2,
-                         y = y1, yend = y2),
-                     linewidth = linewidth,
-                     color = color)
-    }
-
   }
 
-  graph
+  if (!requireNamespace("sf", quietly = TRUE)) {
+    stop(
+      "Vous devez installer le package \"sf\" pour utiliser cette fonction.",
+      call. = FALSE
+    )
+  }
+
+  if (!requireNamespace("maps", quietly = TRUE)) {
+    stop(
+      "Vous devez installer le package \"maps\" pour utiliser cette fonction.",
+      call. = FALSE
+    )
+  }
+
+  # ~~~~{    reférentiel    }~~~~
+
+  # fond de carte
+  france_map <- ggplot2::map_data('france')
+
+
+  # ~~~~{    Conversion en format sf    }~~~~
+
+  # référentiel
+  crs.lambert93 <- sp::CRS('+init=epsg:2154')
+
+  # conversion du fond de carte
+  list_ploygons <- list()
+  for(reg_i in unique(france_map$region)){
+    france_map_i <- filter(france_map, region == reg_i)
+    list_ploygons[[reg_i]] <- sp::Polygons(list(sp::Polygon(france_map_i[,c('long','lat')])), reg_i)
+  }
+
+  st_map <- sp::SpatialPolygons(list_ploygons, proj4string=crs.lambert93)
+
+  centroides <- sp::coordinates(st_map) |> data.frame()
+  names(centroides) <- c('lat','long')
+  centroides <- tibble::rownames_to_column(centroides, 'departement')
+
+  sf_map <- sf::st_as_sf(st_map)
+
+  # conversion des points
+  data <- as.data.frame(data)
+  data$x <- data[,long]
+  data$y <- data[,lat]
+
+  pnts_trans <- select(data, x, y) |>
+    sp::SpatialPoints(proj4string = crs.lambert93) |>
+    sf::st_as_sf()
+
+  # ~~~~{    intersection    }~~~~
+  data$departement <- apply(sf::st_intersects(sf_map, pnts_trans, sparse = FALSE), 2,
+                            function(col) {
+                              names(sf_map[col, ]$geometry)
+                            })
+
+  list(data = data, centroides = centroides)
+
 }
+
 
 

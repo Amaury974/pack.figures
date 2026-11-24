@@ -11,7 +11,7 @@ quel_dep(data, long = "longitude", lat = "latitude")
 
 \item{long}{Colonne de longitude.}
 
-\item{lat}{Colonne de lattitude.}
+\item{lat}{Colonne de latitude.}
 }
 \value{
 liste avec :

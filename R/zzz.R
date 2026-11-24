@@ -1,19 +1,15 @@
 
 .onLoad <- function(libname, pkgname) {
+
+  Sys.unsetenv(c("PROJ_LIB", "PROJ_DATA"))
+  message("les directions 'PROJ_LIB' et 'PROJ_DATA' ont été réinitialisées")
+
   if (getOption("ggplot.change.default.options", TRUE)) {
     if (requireNamespace("ggplot2", quietly = TRUE)) {
-      ggplot2::theme_set(ggplot2::theme_minimal())
-      ggplot2::update_theme(
-        legend.box.spacing = unit(0, "pt"),
-        legend.position = 'bottom',
-        legend.box = "horizontal",
-        plot.title = element_text(hjust = 0, vjust = 1),
-        plot.caption = element_text(size = 7, color = '#4D4D4DFF'),
-        plot.caption.position = 'plot',
-        plot.subtitle = element_text(color = '#4D4D4DFF'),
-        legend.key.spacing.y = unit(0, "pt"),
-      )
+      ggplot2::theme_set(theme_basique())
       options(ggplot2.continuous.colour="viridis", ggplot2.continuous.fill = "viridis")
+      message('le paramètres ggplot ont été modifié pour theme_ajorant() et couleurs viridis')
+
     }
   }
 
@@ -22,6 +18,5 @@
       options(dplyr.summarise.inform = FALSE)
     }
   }
-
 
 }

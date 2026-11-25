@@ -1124,7 +1124,7 @@ dim_aire <- function(ratio, aire = 30, marge_X = 0, marge_Y = 1){
 #'
 #' Édite une liste de marqueurs colorés utilisable dans leaflet
 #'
-#' @param palette Palette de couleur sous forme `list(name = couleur_hexadecimal)`
+#' @param palette Palette de couleur nommée sous forme `list(name = couleur)`
 #'
 #' @returns liste de forme `leaflet::iconList()`
 #' @export
@@ -1157,6 +1157,10 @@ leaf_colored_markers <- function(palette){
   )
 
   temp_dir <- tempdir()                                                           # Un emplacement temporaire pour stocker les icônes le temps de les utiliser.
+
+  # conversion de la palette en hexadécimale, marche pour des couleur "texte"
+  palette[] <- grDevices::col2rgb(palette) |> t() |> as.data.frame() |>             # Conversion en RGB
+    with(grDevices::rgb(red, green, blue, maxColorValue = 255))                   # conversion en hexadécimale
 
   list_icons <- list()
   for (i in names(palette)) {

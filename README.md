@@ -74,7 +74,7 @@ library(pack.figures)
 
 ## Fonctions
 
-### Graphiques préconfigurés
+### Graphiques préconfigurés pour la modélisation
 
 | Fonction | Description |
 |----|----|
@@ -82,16 +82,16 @@ library(pack.figures)
 | `graph_perf_ROC()` | Graphique observé / simulé en quadrants selon des seuils, avec sensibilité, spécificité, taux de bien prédits et indice de Youden |
 | `boxplot2()` | Boxplot par catégorie avec test de Tukey (groupes de significativité), classé par médiane |
 | `rf_fig()` | Figure d’analyse d’une forêt aléatoire : %IncMSE et IncNodePurity |
-| `geom_break()` | Couche ggplot2 (`+ geom_break()`) ajoutant une cassure (deux slashes) sur une courbe pour indiquer une rupture de continuité |
 
-### Thèmes
+### Apparence et thèmes
 
 | Fonction | Description |
 |----|----|
 | `theme_basique()` | Thème pour les graphiques, basé sur `theme_minimal()` : légende en bas, sous-titre et source en gris. Appliqué par défaut au chargement du package |
 | `theme_carto()` | Thème pour les cartes, basé sur `theme_void()` |
+| `mega_Palette()` | Palette jusqu’à ~50 couleurs à peu près discernables (non adaptée aux daltoniens) |
 
-### Mise en page et export
+### Exportations des figures
 
 | Fonction | Description |
 |----|----|
@@ -99,16 +99,21 @@ library(pack.figures)
 | `sauv_graph()` | Enregistre une figure en png et/ou svg |
 | `add_background_image()` | Ajoute une image en arrière-plan (non déformée) sous le quadrillage d’un ggplot |
 | `save_plot_bg()` | Enregistre un ggplot avec image de fond (png) |
-| `dim_aire()` | Dimensions d’export optimales pour un ratio et une aire donnés |
-| `quelles_marges()` | Marges fixes (X, Y) d’un ggplot |
 
-### Couleurs
+### Autre fonction concernant les figures
 
 | Fonction | Description |
 |----|----|
-| `mega_Palette()` | Palette jusqu’à ~50 couleurs à peu près discernables (non adaptée aux daltoniens) |
+| `geom_break()` | Couche ggplot2 (`+ geom_break()`) ajoutant une cassure (deux slashes) sur une courbe pour indiquer une rupture de continuité |
 
-### Cartographie
+### Exportaion en contexte SIG
+
+| Fonction | Description |
+|----|----|
+| `dim_aire()` | Dimensions d’export optimales pour un ratio et une aire donnés |
+| `quelles_marges()` | Marges fixes (X, Y) d’un ggplot |
+
+### autres fonctin pour les SIG
 
 | Fonction | Description |
 |----|----|
@@ -123,7 +128,10 @@ La documentation détaillée de chaque fonction est accessible via
 
 ``` r
 library(pack.figures)
+#> Le chargement a nécessité le package : ggplot2
 #> Warning: le package 'ggplot2' a été compilé avec la version R 4.4.3
+#> les directions 'PROJ_LIB' et 'PROJ_DATA' ont été réinitialisées
+#> le paramètres ggplot ont été modifié pour theme_basique() et couleurs viridis
 ```
 
 ### Thèmes
@@ -170,6 +178,20 @@ boxplot2(iris, x = "Species", y = "Sepal.Length")
 ```
 
 <img src="man/figures/README-boxplot2-1.png" alt="" width="100%" />
+
+### Figure d’analyse d’une forêt aléatoire
+
+``` r
+rf <- randomForest::randomForest(Sepal.Length ~ ., data = iris, importance = TRUE)
+
+rf_fig(rf, titre = "Importance des variables",
+       fichier = "man/figures/README-rf-fig.png",
+       .expl_var = TRUE)
+
+knitr::include_graphics("man/figures/README-rf-fig.png")
+```
+
+<img src="man/figures/README-rf-fig.png" alt="" width="100%" />
 
 ### Cassure de courbe
 
@@ -218,7 +240,7 @@ leaflet::leaflet() |>
                       icon = my_markers[names(list_col)])
 ```
 
-    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpmmVHbr/file4c98477d6349.html screenshot completed
+    #> file:///C:/Users/Delagarde/AppData/Local/Temp/RtmpAJI7ZV/file521443f37906.html screenshot completed
 
 <img src="man/figures/README-leaflet-capture-1.png" alt="" width="100%" />
 
@@ -231,7 +253,7 @@ dessinées. La fonction renvoie une liste : la carte, puis la largeur et
 la hauteur suggérées pour l’export.
 
 L’ombrage du relief (`.ombrage = TRUE`) n’est appliqué que si le raster
-correspondant est accessible ; l’exemple ci-dessous s’en passe.
+correspondant est accessible.
 
 ``` r
 communes <- data.frame(code_insee = c("97411", "97415", "97416", "97414"),
@@ -338,19 +360,6 @@ knitr::include_graphics("man/figures/README-fig-grid.png")
 ```
 
 <img src="man/figures/README-fig-grid.png" alt="" width="100%" />
-
-### Figure d’analyse d’une forêt aléatoire
-
-``` r
-rf <- randomForest::randomForest(Sepal.Length ~ ., data = iris, importance = TRUE)
-
-rf_fig(rf, titre = "Importance des variables",
-       fichier = "man/figures/README-rf-fig.png")
-
-knitr::include_graphics("man/figures/README-rf-fig.png")
-```
-
-<img src="man/figures/README-rf-fig.png" alt="" width="100%" />
 
 ## Licence
 

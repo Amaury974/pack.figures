@@ -8,7 +8,7 @@
     if (requireNamespace("ggplot2", quietly = TRUE)) {
       ggplot2::theme_set(theme_basique())
       options(ggplot2.continuous.colour="viridis", ggplot2.continuous.fill = "viridis")
-      message('le paramètres ggplot ont été modifié pour theme_ajorant() et couleurs viridis')
+      message('le paramètres ggplot ont été modifié pour theme_basique() et couleurs viridis')
 
     }
   }
